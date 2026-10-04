@@ -577,9 +577,8 @@ td.n { text-align: right; font-weight: 800; }
     dat:  { name: "Đất",  icon: "⛰️", beats: "nuoc", verb: "chặn" }
   };
   const ENEMY_HP = 100;
-  const DMG = { strong: 20, normal: 10, weak: 5, plain: 10 };   // khắc ×2, bị khắc ×½
+  const DMG = { strong: 20, normal: 10, weak: 5 };   // khắc ×2, bị khắc ×½
   function matchup(atkEl, defEl) {
-    if (!atkEl) return "plain";   // Cún Vàng không có hệ: luôn đánh 10
     if (!defEl) return "normal";
     if (ELEM[atkEl].beats === defEl) return "strong";
     if (ELEM[defEl].beats === atkEl) return "weak";
@@ -588,7 +587,7 @@ td.n { text-align: right; font-weight: 800; }
   // fx: "shield" đỡ 1 lần sai · "heal" hồi 1 tim · "poison" mỗi đòn sau trong trận mạnh thêm 2
   const FX_DESC = { shield: "Đỡ giúp 1 lần trả lời sai", heal: "Hồi 1 trái tim", poison: "Mỗi đòn sau mạnh thêm 2" };
   const ANIMALS = {
-    cun:   { name: "Cún Vàng",      emoji: "🐶", type: "dem",    el: null,   skill: "Cắn",        food: "🦴", note: "Không có hệ, luôn đánh 10" },
+    cun:   { name: "Cún Vàng",      emoji: "🐶", type: "dem",    el: "dat",  skill: "Cắn",        food: "🦴" },
     ong:   { name: "Ong Mật",       emoji: "🐝", type: "cong",   el: "lua",  skill: "Chích",      food: "🍯" },
     rua:   { name: "Rùa Xanh",      emoji: "🐢", type: "tru",    el: "nuoc", skill: "Mai rùa",    food: "🥬", fx: "shield" },
     cu:    { name: "Cú Mèo",        emoji: "🦉", type: "sosanh", el: "sat",  skill: "Tiếng hú",   food: "🐛", fx: "heal" },
@@ -811,7 +810,7 @@ td.n { text-align: right; font-weight: 800; }
   }
   function showLegend() {
     showModal(`<h2>☯️ Bảng khắc chế</h2>${legendHTML()}
-      <p class="note">Mỗi con quái có ${ENEMY_HP} máu. Bình thường mỗi câu đúng đánh <b>${DMG.normal}</b>. Bạn thú khắc được quái thì đánh gấp đôi: <b>${DMG.strong}</b>. Bị quái khắc thì chỉ đánh một nửa: <b>${DMG.weak}</b>. Cún Vàng không có hệ, luôn đánh ${DMG.plain}.</p>
+      <p class="note">Mỗi con quái có ${ENEMY_HP} máu. Bình thường mỗi câu đúng đánh <b>${DMG.normal}</b>. Bạn thú khắc được quái thì đánh gấp đôi: <b>${DMG.strong}</b>. Bị quái khắc thì chỉ đánh một nửa: <b>${DMG.weak}</b>.</p>
       <p class="note">Cẩn thận: trả lời <b>sai</b> thì quái <b>hồi lại</b> đúng số máu đó và bé mất 1 trái tim.</p>
       <button class="btn big green" data-close>Đã hiểu</button>`, m => { $("[data-close]", m).onclick = hideModal; });
   }
@@ -1771,7 +1770,7 @@ td.n { text-align: right; font-weight: 800; }
 
   /* ================= BATTLE ================= */
   let B = null;
-  const MU_LABEL = { strong: `Mạnh ×${DMG.strong}`, normal: `Thường ×${DMG.normal}`, weak: `Yếu ×${DMG.weak}`, plain: `Đánh ×${DMG.plain}` };
+  const MU_LABEL = { strong: `Mạnh ×${DMG.strong}`, normal: `Thường ×${DMG.normal}`, weak: `Yếu ×${DMG.weak}` };
   function firstPet() {
     const ready = S.owned.filter(id => !isHungry(id));
     return ready.length ? ready[ready.length - 1] : null;
