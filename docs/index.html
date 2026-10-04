@@ -590,7 +590,7 @@ td.n { text-align: right; font-weight: 800; }
     dat:  { name: "Đất",  icon: "⛰️", beats: "nuoc", verb: "chặn" }
   };
   const ENEMY_HP = 100;
-  const DMG = { strong: 10, normal: 5, weak: 1, plain: 10 };
+  const DMG = { strong: 20, normal: 10, weak: 5, plain: 10 };   // khắc ×2, bị khắc ×½
   function matchup(atkEl, defEl) {
     if (!atkEl) return "plain";   // Cún Vàng không có hệ: luôn đánh 10
     if (!defEl) return "normal";
@@ -824,7 +824,7 @@ td.n { text-align: right; font-weight: 800; }
   }
   function showLegend() {
     showModal(`<h2>☯️ Bảng khắc chế</h2>${legendHTML()}
-      <p class="note">Mỗi con quái có ${ENEMY_HP} máu. Bạn thú khắc được quái thì mỗi câu đúng đánh <b>10</b>. Bị quái khắc thì chỉ đánh <b>1</b>. Còn lại đánh <b>5</b>. Cún Vàng không có hệ, luôn đánh 10.</p>
+      <p class="note">Mỗi con quái có ${ENEMY_HP} máu. Bình thường mỗi câu đúng đánh <b>${DMG.normal}</b>. Bạn thú khắc được quái thì đánh gấp đôi: <b>${DMG.strong}</b>. Bị quái khắc thì chỉ đánh một nửa: <b>${DMG.weak}</b>. Cún Vàng không có hệ, luôn đánh ${DMG.plain}.</p>
       <p class="note">Cẩn thận: trả lời <b>sai</b> thì quái <b>hồi lại</b> đúng số máu đó và bé mất 1 trái tim.</p>
       <button class="btn big green" data-close>Đã hiểu</button>`, m => { $("[data-close]", m).onclick = hideModal; });
   }
@@ -1784,7 +1784,7 @@ td.n { text-align: right; font-weight: 800; }
 
   /* ================= BATTLE ================= */
   let B = null;
-  const MU_LABEL = { strong: "Mạnh ×10", normal: "Thường ×5", weak: "Yếu ×1", plain: "Đánh ×10" };
+  const MU_LABEL = { strong: `Mạnh ×${DMG.strong}`, normal: `Thường ×${DMG.normal}`, weak: `Yếu ×${DMG.weak}`, plain: `Đánh ×${DMG.plain}` };
   function firstPet() {
     const ready = S.owned.filter(id => !isHungry(id));
     return ready.length ? ready[ready.length - 1] : null;
@@ -1842,8 +1842,8 @@ td.n { text-align: right; font-weight: 800; }
       if (isHungry(id)) { toast(`${ANIMALS[id].name} đói rồi! Về 🏕️ Trại cho ăn nhé.`); return; }
       B.pet = id; sfx("ok"); hud(); renderTray(); newProblem();
       const a = ANIMALS[id], st = STAGES[B.i], mu = matchup(a.el, st.el);
-      if (mu === "strong") toast(`${ELEM[a.el].icon} ${ELEM[a.el].name} ${ELEM[a.el].verb} ${ELEM[st.el].icon} ${ELEM[st.el].name}: đánh mạnh ×10!`, 3000);
-      if (mu === "weak") toast(`Ôi! ${ELEM[st.el].icon} ${ELEM[st.el].name} ${ELEM[st.el].verb} ${ELEM[a.el].icon} ${ELEM[a.el].name}: chỉ đánh được 1 thôi.`, 3000);
+      if (mu === "strong") toast(`${ELEM[a.el].icon} ${ELEM[a.el].name} ${ELEM[a.el].verb} ${ELEM[st.el].icon} ${ELEM[st.el].name}: đánh gấp đôi ×${DMG.strong}!`, 3000);
+      if (mu === "weak") toast(`Ôi! ${ELEM[st.el].icon} ${ELEM[st.el].name} ${ELEM[st.el].verb} ${ELEM[a.el].icon} ${ELEM[a.el].name}: chỉ đánh được ${DMG.weak} thôi.`, 3000);
     });
     const on = $(".pet-card.on", tray);
     if (on && (on.offsetLeft < tray.scrollLeft || on.offsetLeft + on.clientWidth > tray.scrollLeft + tray.clientWidth))
@@ -1995,7 +1995,7 @@ td.n { text-align: right; font-weight: 800; }
   function lose() {
     say("Hết tim rồi. Thử lại nhé!");
     showModal(`<div class="big-em">😵</div><h2>Hết tim rồi!</h2><p>Không sao cả, mình thử lại nhé!</p>
-      <p class="note">Mẹo: chọn bạn thú có nhãn <b>Mạnh ×10</b> để đánh nhanh hơn.</p>
+      <p class="note">Mẹo: chọn bạn thú có nhãn <b>Mạnh ×${DMG.strong}</b> để đánh nhanh hơn.</p>
       <button class="btn big green" data-retry>Chơi lại</button><button class="btn wood" data-camp>🏕️ Về trại cho thú ăn</button>`, m => {
       $("[data-retry]", m).onclick = () => startBattle(B.i);
       $("[data-camp]", m).onclick = () => go("camp");
