@@ -590,9 +590,9 @@ td.n { text-align: right; font-weight: 800; }
     dat:  { name: "Đất",  icon: "⛰️", beats: "nuoc", verb: "chặn" }
   };
   const ENEMY_HP = 100;
-  const DMG = { strong: 10, normal: 5, weak: 1, plain: 1 };
+  const DMG = { strong: 10, normal: 5, weak: 1, plain: 10 };
   function matchup(atkEl, defEl) {
-    if (!atkEl) return "plain";   // Cún Vàng không có hệ: luôn đánh 1
+    if (!atkEl) return "plain";   // Cún Vàng không có hệ: luôn đánh 10
     if (!defEl) return "normal";
     if (ELEM[atkEl].beats === defEl) return "strong";
     if (ELEM[defEl].beats === atkEl) return "weak";
@@ -601,7 +601,7 @@ td.n { text-align: right; font-weight: 800; }
   // fx: "shield" đỡ 1 lần sai · "heal" hồi 1 tim · "poison" mỗi đòn sau trong trận mạnh thêm 2
   const FX_DESC = { shield: "Đỡ giúp 1 lần trả lời sai", heal: "Hồi 1 trái tim", poison: "Mỗi đòn sau mạnh thêm 2" };
   const ANIMALS = {
-    cun:   { name: "Cún Vàng",      emoji: "🐶", type: "dem",    el: null,   skill: "Cắn",        food: "🦴", note: "Không bao giờ đói, nhưng chỉ đánh 1" },
+    cun:   { name: "Cún Vàng",      emoji: "🐶", type: "dem",    el: null,   skill: "Cắn",        food: "🦴", note: "Không có hệ, luôn đánh 10" },
     ong:   { name: "Ong Mật",       emoji: "🐝", type: "cong",   el: "lua",  skill: "Chích",      food: "🍯" },
     rua:   { name: "Rùa Xanh",      emoji: "🐢", type: "tru",    el: "nuoc", skill: "Mai rùa",    food: "🥬", fx: "shield" },
     cu:    { name: "Cú Mèo",        emoji: "🦉", type: "sosanh", el: "sat",  skill: "Tiếng hú",   food: "🐛", fx: "heal" },
@@ -731,14 +731,14 @@ td.n { text-align: right; font-weight: 800; }
   const diff = id => Math.max(level(id), Math.min(3, 1 + Math.floor(S.unlocked / 5)));
   const heroEmoji = () => S.hero === "girl" ? "👧" : "👦";
   const heroName = () => S.name || (S.hero === "girl" ? "Bé gái" : "Bé trai");
-  const isHungry = id => id !== "cun" && S.pets[id].atk < 1;
-  const bolts = id => id === "cun" ? "⚔️∞" : `⚔️${S.pets[id].atk}`;
+  const isHungry = id => S.pets[id].atk < 1;
+  const bolts = id => `⚔️${S.pets[id].atk}`;
   const fullPct = id => Math.round((S.pets[id].atk / ATK_MAX) * 100);
-  const feedWait = id => id === "cun" ? 0 : Math.max(0, (S.pets[id].fedAt || 0) + FEED_COOLDOWN - Date.now());
+  const feedWait = id => Math.max(0, (S.pets[id].fedAt || 0) + FEED_COOLDOWN - Date.now());
   const mmss = ms => { const s = Math.ceil(ms / 1000); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`; };
   // Đói thì teo tóp: gầy, nhỏ, nhạt màu, gục đầu
   function bodyStyle(id) {
-    const f = id === "cun" ? 1 : S.pets[id].atk / ATK_MAX;
+    const f = S.pets[id].atk / ATK_MAX;
     const sy = 0.62 + 0.38 * f, sx = sy * (0.72 + 0.28 * f);
     return `--sx:${sx.toFixed(3)};--sy:${sy.toFixed(3)};--sat:${(0.25 + 0.75 * f).toFixed(2)};--bri:${(0.85 + 0.15 * f).toFixed(2)};--tilt:${((1 - f) * -10).toFixed(1)}deg`;
   }
@@ -824,7 +824,7 @@ td.n { text-align: right; font-weight: 800; }
   }
   function showLegend() {
     showModal(`<h2>☯️ Bảng khắc chế</h2>${legendHTML()}
-      <p class="note">Mỗi con quái có ${ENEMY_HP} máu. Bạn thú khắc được quái thì mỗi câu đúng đánh <b>10</b>. Bị quái khắc thì chỉ đánh <b>1</b>. Còn lại đánh <b>5</b>. Cún Vàng không có hệ, chỉ đánh 1.</p>
+      <p class="note">Mỗi con quái có ${ENEMY_HP} máu. Bạn thú khắc được quái thì mỗi câu đúng đánh <b>10</b>. Bị quái khắc thì chỉ đánh <b>1</b>. Còn lại đánh <b>5</b>. Cún Vàng không có hệ, luôn đánh 10.</p>
       <p class="note">Cẩn thận: trả lời <b>sai</b> thì quái <b>hồi lại</b> đúng số máu đó và bé mất 1 trái tim.</p>
       <button class="btn big green" data-close>Đã hiểu</button>`, m => { $("[data-close]", m).onclick = hideModal; });
   }
@@ -1117,8 +1117,7 @@ td.n { text-align: right; font-weight: 800; }
         const a = ANIMALS[id];
         if (!S.owned.includes(id)) return "";
         const ps = S.pets[id], lv = level(id), pct = lv >= 3 ? 100 : ((ps.xp % 8) / 8) * 100;
-        const en = id === "cun" ? "⚔️ không giới hạn"
-          : `<span class="fullbar">⚔️ <span class="mini"><i style="width:${fullPct(id)}%"></i></span>${S.pets[id].atk}/${ATK_MAX} lượt</span>`;
+        const en = `<span class="fullbar">⚔️ <span class="mini"><i style="width:${fullPct(id)}%"></i></span>${S.pets[id].atk}/${ATK_MAX} lượt</span>`;
         return `<div class="sign camp-card"><span class="em"><span class="pet-body${isHungry(id) ? " droopy" : ""}" style="${bodyStyle(id)}">${a.emoji}</span></span>
           <div><h3>${a.name} · Cấp ${lv}</h3><div class="xp"><i style="width:${pct}%"></i></div></div>
           <div class="meta">${a.el ? `Hệ ${ELEM[a.el].icon} ${ELEM[a.el].name}` : "Không hệ"} · ${TOPIC[a.type]} · Đòn: ${a.move.name} · ${a.skill}: ${a.desc}</div>
@@ -1135,8 +1134,7 @@ td.n { text-align: right; font-weight: 800; }
       const btns = app.querySelectorAll("[data-feed]");
       const refresh = () => btns.forEach(b => {
         const id = b.dataset.feed, a = ANIMALS[id], wait = feedWait(id);
-        if (id === "cun") { b.textContent = `Luyện tập ${a.food}`; b.disabled = false; }
-        else if (S.pets[id].atk >= ATK_MAX) { b.textContent = "No rồi 😋"; b.disabled = true; }
+        if (S.pets[id].atk >= ATK_MAX) { b.textContent = "No rồi 😋"; b.disabled = true; }
         else if (wait > 0) { b.textContent = `⏳ Chờ ${mmss(wait)}`; b.disabled = true; }
         else { b.textContent = `Cho ăn ${a.food}`; b.disabled = false; }
       });
@@ -1146,15 +1144,15 @@ td.n { text-align: right; font-weight: 800; }
     },
 
     feed(id) {
-      const a = ANIMALS[id], ps = S.pets[id], isCun = id === "cun";
+      const a = ANIMALS[id], ps = S.pets[id];
       app.innerHTML = `<div class="screen">
         <div class="bar"><button class="icon-btn" data-back aria-label="Về trại">←</button><div class="grow"><h2>${a.name}</h2></div><div class="qcount" id="qCount"></div></div>
         <div class="feed-stage">
-          <div class="feed-pet"><span class="em pet-body" id="feedPet">${a.emoji}</span>${isCun ? "" : `<div class="mood" id="mood"></div>`}</div>
-          ${isCun ? "" : `<div class="gauge-wrap" id="jar" aria-label="Lượt tấn công">
+          <div class="feed-pet"><span class="em pet-body" id="feedPet">${a.emoji}</span><div class="mood" id="mood"></div></div>
+          <div class="gauge-wrap" id="jar" aria-label="Lượt tấn công">
             <div class="gauge-top">⚔️</div>
             <div class="gauge">${Array.from({ length: ATK_MAX }, () => `<i class="seg"></i>`).join("")}</div>
-            <div class="jar-pct" id="jarPct"></div><div class="gauge-cap">lượt tấn công</div></div>`}
+            <div class="jar-pct" id="jarPct"></div><div class="gauge-cap">lượt tấn công</div></div>
         </div>
         <div class="panel" id="panel"></div></div>`;
       $("[data-back]").onclick = () => go("camp");
@@ -1162,7 +1160,6 @@ td.n { text-align: right; font-weight: 800; }
       let asked = 0, right = 0, busy = false;
       const draw = () => {
         $("#qCount").textContent = `Câu ${Math.max(asked, 1)}/${FEED_QUESTIONS}`;
-        if (isCun) return;
         petEl.setAttribute("style", bodyStyle(id));
         petEl.classList.toggle("droopy", isHungry(id));
         $("#mood").textContent = mood(id);
@@ -1171,31 +1168,30 @@ td.n { text-align: right; font-weight: 800; }
       };
       const finish = full => {
         draw();
-        const msg = isCun ? `Xong ${FEED_QUESTIONS} câu luyện tập, đúng ${right} câu!`
-          : full ? `${a.name} no căng bụng rồi! 😋 Có đủ ${ATK_MAX} lượt tấn công.` : `Hết ${FEED_QUESTIONS} câu rồi. ${a.name} có ${ps.atk} lượt tấn công.`;
-        const sub = isCun ? "" : `<p class="why">Đợi 5 phút nữa mới được cho ăn tiếp nhé.</p>`;
+        const msg = full ? `${a.name} no căng bụng rồi! 😋 Có đủ ${ATK_MAX} lượt tấn công.` : `Hết ${FEED_QUESTIONS} câu rồi. ${a.name} có ${ps.atk} lượt tấn công.`;
+        const sub = `<p class="why">Đợi 5 phút nữa mới được cho ăn tiếp nhé.</p>`;
         panel.innerHTML = `<div class="sign hint"><div class="hint-title">${msg}</div><p class="why">Đúng ${right}/${asked} câu</p>${sub}
           <button class="btn green big" data-camp>Về trại</button></div>`;
         $("[data-camp]", panel).onclick = () => go("camp");
         say(msg.replace(/[😋⚔️]/gu, ""));
       };
       const next = () => {
-        if (!isCun && ps.atk >= ATK_MAX) return finish(true);
+        if (ps.atk >= ATK_MAX) return finish(true);
         if (asked >= FEED_QUESTIONS) return finish(false);
         asked++; draw();
         const p = makeProblem(a.type, diff(id));
         panel.innerHTML = problemHTML(p); busy = false;
         bindProblem(panel, p, (btn, c) => {
           if (busy) return; busy = true;
-          if (!isCun && asked === 1) { ps.fedAt = Date.now(); }   // bắt đầu tính 5 phút chờ từ câu đầu tiên
+          if (asked === 1) { ps.fedAt = Date.now(); }   // bắt đầu tính 5 phút chờ từ câu đầu tiên
           const ok = c.v === p.answer, lvBefore = level(id);
           record(p.type, ok); markChoices(panel, btn, ok, p);
           if (ok) {
             right++; sfx("eat"); ps.xp++;
-            if (!isCun) ps.atk = Math.min(ATK_MAX, ps.atk + 1);
+            ps.atk = Math.min(ATK_MAX, ps.atk + 1);
             persist(); draw();
-            anim(petEl, "yum"); if (!isCun) anim($("#jar"), "bump");
-            floatText($(".feed-pet"), isCun ? a.food + " Ngon!" : a.food + " +1 ⚔️", true);
+            anim(petEl, "yum"); anim($("#jar"), "bump");
+            floatText($(".feed-pet"), a.food + " +1 ⚔️", true);
             say(pick(PRAISE));
             if (level(id) > lvBefore) toast(`${a.name} lên cấp ${level(id)}! Bài sẽ khó hơn một chút.`);
             setTimeout(next, 900);
@@ -1211,7 +1207,7 @@ td.n { text-align: right; font-weight: 800; }
       };
       draw();
       const wait = feedWait(id);
-      if (!isCun && (wait > 0 || ps.atk >= ATK_MAX)) {
+      if (wait > 0 || ps.atk >= ATK_MAX) {
         const msg = ps.atk >= ATK_MAX ? `${a.name} đang no, chưa cần ăn đâu!` : `${a.name} vừa ăn xong. Đợi ${mmss(wait)} nữa nhé!`;
         panel.innerHTML = `<div class="sign hint"><div class="hint-title">${msg}</div><button class="btn green big" data-camp>Về trại</button></div>`;
         $("[data-camp]", panel).onclick = () => go("camp");
@@ -1788,15 +1784,16 @@ td.n { text-align: right; font-weight: 800; }
 
   /* ================= BATTLE ================= */
   let B = null;
-  const MU_LABEL = { strong: "Mạnh ×10", normal: "Thường ×5", weak: "Yếu ×1", plain: "Đánh ×1" };
+  const MU_LABEL = { strong: "Mạnh ×10", normal: "Thường ×5", weak: "Yếu ×1", plain: "Đánh ×10" };
   function firstPet() {
-    const ready = S.owned.filter(id => id !== "cun" && !isHungry(id));
-    return ready.length ? ready[ready.length - 1] : "cun";
+    const ready = S.owned.filter(id => !isHungry(id));
+    return ready.length ? ready[ready.length - 1] : null;
   }
   function startBattle(i) {
     clearInterval(ticker); window.onresize = window.onkeydown = null;
-    const st = STAGES[i];
-    B = { i, hp: st.hp, max: st.hp, hearts: MAX_HEARTS, shield: false, poison: 0, pet: firstPet(), busy: false, lost: 0, p: null };
+    const st = STAGES[i], pet = firstPet();
+    if (!pet) return allHungry(false);
+    B = { i, hp: st.hp, max: st.hp, hearts: MAX_HEARTS, shield: false, poison: 0, pet, busy: false, lost: 0, p: null };
     app.scrollTop = 0; hideModal();
     const caged = !S.owned.includes(st.rescue);
     app.innerHTML = `<div class="screen">
@@ -1897,7 +1894,7 @@ td.n { text-align: right; font-weight: 800; }
     if (ok) {
       const id = B.pet, a = ANIMALS[id], ps = S.pets[id], lvBefore = level(id), st = STAGES[B.i];
       const mu = matchup(a.el, st.el), dmg = DMG[mu] + B.poison;
-      ps.xp++; if (id !== "cun") ps.atk = Math.max(0, ps.atk - 1);
+      ps.xp++; ps.atk = Math.max(0, ps.atk - 1);
       if (a.fx === "shield") B.shield = true;
       if (a.fx === "poison") B.poison = Math.min(10, B.poison + 2);
       const healed = a.fx === "heal" && B.hearts < MAX_HEARTS; if (healed) B.hearts++;
@@ -1920,7 +1917,11 @@ td.n { text-align: right; font-weight: 800; }
       if (level(id) > lvBefore) setTimeout(() => toast(`${a.name} lên cấp ${level(id)}! 🎉`), 400);
       setTimeout(() => {
         if (B.hp <= 0) return win();
-        if (isHungry(id)) { toast(`${a.name} đói rồi, Cún Vàng ra trận!`); B.pet = "cun"; hud(); }
+        if (isHungry(id)) {
+          const nx = firstPet();
+          if (!nx) return allHungry(true);
+          toast(`${a.name} đói rồi, ${ANIMALS[nx].name} ra trận!`); B.pet = nx; hud();
+        }
         renderTray(); newProblem();
       }, 1200);
       });
@@ -1977,6 +1978,17 @@ td.n { text-align: right; font-weight: 800; }
       // song sắt bật lên sau một nhịp
       const c = $(".cage-pop .cage-box", m);
       if (c) setTimeout(() => { c.classList.add("open"); const l = $(".lock", c); if (l) l.remove(); }, 700);
+      $("[data-map]", m).onclick = () => go("map");
+    });
+  }
+  // Không còn bạn thú nào có lượt tấn công
+  function allHungry(midBattle) {
+    say("Các bạn thú đói hết rồi. Về trại cho ăn nhé!");
+    showModal(`<div class="big-em">😴</div><h2>Các bạn thú đói hết rồi!</h2>
+      <p>${midBattle ? "Bạn thú nào cũng hết lượt tấn công." : "Chưa bạn thú nào có lượt tấn công."}</p>
+      <p class="note">Về 🏕️ Trại, giải bài để cho bạn thú ăn. Mỗi câu đúng được thêm 1 lượt tấn công.</p>
+      <button class="btn big green" data-camp>🏕️ Về trại cho ăn</button><button class="btn ghost" data-map>Về bản đồ</button>`, m => {
+      $("[data-camp]", m).onclick = () => go("camp");
       $("[data-map]", m).onclick = () => go("map");
     });
   }
