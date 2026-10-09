@@ -31,7 +31,7 @@ HEAD = """<!doctype html>
 <meta name="description" content="{desc}">
 <title>{title}</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>{icon}</text></svg>">
-<style>:root{{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box}}</style>
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 {extra}
 </head>
 <body>
@@ -75,7 +75,7 @@ hub_body = """<link rel="preconnect" href="https://fonts.googleapis.com">
 html, body { min-height: 100%; }
 body { margin: 0; font-family: "Nunito", system-ui, sans-serif; color: var(--ink);
   background: linear-gradient(var(--sky-hi), var(--sky) 45%, var(--grass) 45%, var(--grass-dk)); background-attachment: fixed; }
-main { max-width: 540px; margin: 0 auto; padding: 32px 16px 40px; display: flex; flex-direction: column; gap: 16px; }
+main { max-width: 540px; margin: 0 auto; padding: calc(env(safe-area-inset-top, 0px) + 32px) 16px calc(env(safe-area-inset-bottom, 0px) + 40px); display: flex; flex-direction: column; gap: 16px; }
 h1 { font-family: "Baloo 2", system-ui, sans-serif; font-size: 44px; line-height: 1.05; margin: 0; text-align: center; color: var(--wood); text-shadow: 0 3px 0 var(--paper); }
 .sub { text-align: center; margin: 0 0 10px; font-weight: 800; color: var(--grass-dk); }
 .game { display: grid; grid-template-columns: 70px 1fr auto; gap: 12px; align-items: center; text-decoration: none; color: inherit;

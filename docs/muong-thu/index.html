@@ -9,7 +9,7 @@
 <meta name="description" content="Học Toán lớp 1: giải toán để cùng bạn thú đánh quái, giải cứu muông thú.">
 <title>Bé Cứu Muông Thú</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐝</text></svg>">
-<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box}</style>
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script>window.GAME_HUB = "../";</script>
 </head>
 <body>
@@ -54,12 +54,15 @@ body {
 button { font: inherit; color: inherit; cursor: pointer; }
 button:focus-visible, input:focus-visible { outline: 4px solid var(--dot-b); outline-offset: 2px; }
 
+/* Khung game bám đúng vùng màn hình đang nhìn thấy (iPhone: không bị thanh địa chỉ/thanh home che), tự chừa tai thỏ và thanh home */
 #app {
-  max-width: 520px; margin: 0 auto; height: 100%;
+  position: fixed; inset: 0; max-width: 520px; margin: 0 auto;
   display: flex; flex-direction: column;
-  padding-inline: 16px; box-sizing: border-box;
-  overflow-y: auto;
+  padding: env(safe-area-inset-top, 0px) 16px env(safe-area-inset-bottom, 0px); box-sizing: border-box;
+  overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
 }
+:root { --vh: 100vh; }
+@supports (height: 100dvh) { :root { --vh: 100dvh; } }
 .screen { display: flex; flex-direction: column; gap: 14px; padding-block: 14px 24px; min-height: 100%; box-sizing: border-box; }
 
 h1, h2, h3 { font-family: var(--font-display); margin: 0; line-height: 1.1; text-wrap: balance; }
@@ -494,7 +497,7 @@ td.n { text-align: right; font-weight: 800; }
 }
 .f-title { font-family: var(--font-display); font-size: clamp(20px, 5.6vw, 28px); font-weight: 800; text-align: center; text-shadow: 0 2px 0 rgba(0,0,0,.4); text-wrap: balance; }
 .f-title b { color: var(--sun); }
-.f-stage { position: relative; width: min(100%, 520px); height: min(50vh, 340px); }
+.f-stage { position: relative; width: min(100%, 520px); height: min(calc(var(--vh) * .5), 340px); }
 .f-ground {
   position: absolute; left: -10%; right: -10%; bottom: 8%; height: 34%;
   background: radial-gradient(ellipse at 50% 30%, rgba(116,194,111,.6), rgba(63,148,80,.25) 45%, transparent 70%);

@@ -35,7 +35,14 @@ body {
 button, a { font: inherit; color: inherit; }
 button { cursor: pointer; }
 button:focus-visible, a:focus-visible { outline: 4px solid #3a86ff; outline-offset: 2px; }
-#app { max-width: 540px; margin: 0 auto; min-height: 100%; padding-inline: 16px; box-sizing: border-box; }
+/* Khung game bám đúng vùng màn hình đang nhìn thấy (iPhone: không bị thanh địa chỉ/thanh home che), tự chừa tai thỏ và thanh home */
+#app {
+  position: fixed; inset: 0; max-width: 540px; margin: 0 auto;
+  padding: env(safe-area-inset-top, 0px) 16px env(safe-area-inset-bottom, 0px); box-sizing: border-box;
+  overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+}
+:root { --vh: 100vh; }
+@supports (height: 100dvh) { :root { --vh: 100dvh; } }
 .screen { display: flex; flex-direction: column; gap: 14px; padding-block: 14px 28px; }
 h1, h2, h3 { font-family: var(--font-display); margin: 0; line-height: 1.1; text-wrap: balance; }
 .note { color: var(--muted); font-size: 14px; line-height: 1.5; margin: 0; }
@@ -98,7 +105,7 @@ h1, h2, h3 { font-family: var(--font-display); margin: 0; line-height: 1.1; text
 .pill { background: var(--paper); border-radius: 14px; padding: 4px 12px; font-weight: 800; font-size: 15px; box-shadow: 0 3px 0 #d9d2bd; font-variant-numeric: tabular-nums; }
 .board-wrap { display: flex; justify-content: center; }
 .board {
-  --size: min(calc(100vw - 32px), 480px, calc(100vh - 330px));
+  --size: min(calc(100vw - 32px), 480px, calc(var(--vh) - 330px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)));
   width: max(var(--size), 260px); aspect-ratio: 1; max-width: 100%;
   display: grid; grid-template-columns: repeat(var(--n), 1fr); grid-template-rows: repeat(var(--n), 1fr);
   background: var(--wood); border: 5px solid var(--wood); border-radius: 16px; overflow: hidden; gap: 1px;
@@ -174,7 +181,7 @@ body.quake #app { animation: quake .5s; }
 @keyframes flash { 0% { background: #c9f2c7; } 100% { background: var(--paper); } }
 @keyframes shake { 20% { transform: translateX(-5px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(3px); } }
 @keyframes popin { from { transform: scale(.7); opacity: 0; } }
-@keyframes fall { to { transform: translateY(110vh) rotate(540deg); } }
+@keyframes fall { to { transform: translateY(calc(var(--vh) * 1.1)) rotate(540deg); } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition: none !important; } }
 </style>
 
@@ -413,7 +420,7 @@ body.quake #app { animation: quake .5s; }
   }
 
   /* ================= SCREENS ================= */
-  function go(name, ...args) { hideModal(); document.onkeydown = null; window.scrollTo(0, 0); SCREENS[name](...args); }
+  function go(name, ...args) { hideModal(); document.onkeydown = null; app.scrollTop = 0; SCREENS[name](...args); }
 
   const SCREENS = {
     home() {
