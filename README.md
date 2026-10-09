@@ -1,8 +1,13 @@
-# Bé Cứu Muông Thú
+# Góc Game của Gary
+
+Trang chủ: https://xuantrangk54.github.io/MathForGary/
+
+- **Bé Cứu Muông Thú** (`index.html`): https://xuantrangk54.github.io/MathForGary/muong-thu/
+- **Sudoku Rừng Xanh** (`sudoku.html`): https://xuantrangk54.github.io/MathForGary/sudoku/ . Gồm 50 thử thách chia 5 chặng, từ 4×4 hình con vật đến 9×9. Đề được tạo cố định từ hạt giống và có đúng một lời giải.
+
+## Bé Cứu Muông Thú
 
 Game học Toán lớp 1 (tiếng Việt) chơi trên điện thoại và máy tính. Bé điều khiển một cậu bé hoặc cô bé đi qua 20 màn để giải cứu muông thú. Mỗi lần trả lời đúng một bài toán, bạn thú của bé tấn công quái vật.
-
-**Chơi ngay:** https://xuantrangk54.github.io/MathForGary/
 
 ## Nội dung
 - Toán lớp 1: đếm, cộng trừ trong phạm vi 10, so sánh số, nhận biết hình, số còn thiếu, chục và đơn vị, cộng trừ không nhớ trong phạm vi 100. Độ khó tăng dần theo vùng.
@@ -14,7 +19,7 @@ Game học Toán lớp 1 (tiếng Việt) chơi trên điện thoại và máy t
 ## Cấu trúc
 - `index.html`: mã nguồn game, một file duy nhất.
 - `sounds/`: âm thanh tấn công. `sounds/fetch_sounds.py` tải và cắt lại các file này (cần ffmpeg).
-- `build.py`: tạo bản web hoàn chỉnh trong `docs/` cho GitHub Pages. Chạy lại mỗi khi sửa `index.html`.
+- `build.py`: tạo trang chủ và bản web hoàn chỉnh của từng game trong `docs/` cho GitHub Pages. Chạy lại mỗi khi sửa `index.html` hoặc `sudoku.html`.
 
 ## Âm thanh
 - [Mixkit](https://mixkit.co/license/#sfxFree), giấy phép Sound Effects Free

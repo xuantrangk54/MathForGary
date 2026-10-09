@@ -1,0 +1,490 @@
+<title>Sudoku Rừng Xanh</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@600;800&display=swap">
+<style>
+/* Layout: one phone-sized column; the board is a wooden puzzle tray on the forest grass. Same storybook family as "Bé Cứu Muông Thú". */
+:root {
+  --sky: #b8e3f5;
+  --sky-hi: #e6f6fc;
+  --grass: #74c26f;
+  --grass-dk: #3f9450;
+  --wood: #7a4b23;
+  --wood-lt: #b07a45;
+  --sun: #ffc83d;
+  --sun-dk: #e0a514;
+  --paper: #fffdf4;
+  --ink: #22314a;
+  --muted: #6c7a90;
+  --berry: #e2456b;
+  --ok: #2fa35a;
+  --peer: #f3ead2;
+  --same: #ffe7a3;
+  --sel: #ffd35c;
+  --font-display: "Baloo 2", "Nunito", system-ui, sans-serif;
+  --font-body: "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+html, body { height: 100%; }
+[hidden] { display: none !important; }
+body {
+  margin: 0; color: var(--ink); font-family: var(--font-body); font-size: 16px;
+  background: linear-gradient(var(--sky-hi), var(--sky) 40%, var(--grass) 40%, var(--grass-dk));
+  background-attachment: fixed; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none;
+}
+button, a { font: inherit; color: inherit; }
+button { cursor: pointer; }
+button:focus-visible, a:focus-visible { outline: 4px solid #3a86ff; outline-offset: 2px; }
+#app { max-width: 540px; margin: 0 auto; min-height: 100%; padding-inline: 16px; box-sizing: border-box; }
+.screen { display: flex; flex-direction: column; gap: 14px; padding-block: 14px 28px; }
+h1, h2, h3 { font-family: var(--font-display); margin: 0; line-height: 1.1; text-wrap: balance; }
+.note { color: var(--muted); font-size: 14px; line-height: 1.5; margin: 0; }
+
+.btn {
+  border: 0; border-radius: 18px; padding: 12px 20px; background: var(--sun); color: var(--ink);
+  font-family: var(--font-display); font-weight: 800; font-size: 22px; box-shadow: 0 5px 0 var(--sun-dk);
+  display: inline-block; text-align: center; text-decoration: none;
+}
+.btn:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--sun-dk); }
+.btn.green { background: var(--grass); color: #fff; box-shadow: 0 5px 0 var(--grass-dk); }
+.btn.ghost { background: var(--paper); box-shadow: 0 5px 0 #d9d2bd; }
+.btn.big { font-size: 26px; padding: 14px 24px; }
+.icon-btn {
+  border: 0; background: var(--paper); border-radius: 14px; min-width: 48px; height: 48px; padding: 0 12px;
+  font-size: 20px; font-weight: 800; box-shadow: 0 4px 0 #d9d2bd; text-decoration: none; display: inline-grid; place-items: center;
+}
+.sign { background: var(--paper); border: 4px solid var(--wood); border-radius: 22px; padding: 16px; box-shadow: 0 6px 0 var(--wood); }
+.bar { display: flex; align-items: center; gap: 10px; }
+.bar .grow { flex: 1; min-width: 0; }
+.bar h2 { font-size: 22px; color: var(--wood); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar small { display: block; color: var(--muted); font-weight: 800; font-size: 13px; }
+
+/* home */
+.hero { text-align: center; padding-top: 10px; }
+.logo { font-size: 46px; color: var(--wood); text-shadow: 0 3px 0 var(--paper); }
+.logo small { display: block; font-size: 20px; color: var(--grass-dk); letter-spacing: .04em; }
+.mini-board { display: inline-grid; grid-template-columns: repeat(4, 34px); gap: 3px; padding: 6px; margin-top: 12px; background: var(--wood); border-radius: 12px; }
+.mini-board span { width: 34px; height: 34px; display: grid; place-items: center; background: var(--paper); border-radius: 6px; font-size: 22px; }
+.chapters { display: flex; flex-direction: column; gap: 12px; }
+.chap {
+  display: grid; grid-template-columns: 64px 1fr auto; align-items: center; gap: 12px; text-align: left;
+  border: 4px solid var(--wood); background: var(--paper); border-radius: 22px; padding: 12px 14px; box-shadow: 0 5px 0 var(--wood);
+}
+.chap:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--wood); }
+.chap .ic { font-size: 44px; text-align: center; line-height: 1; }
+.chap b { font-family: var(--font-display); font-size: 21px; display: block; line-height: 1.1; }
+.chap small { color: var(--muted); font-weight: 800; }
+.chap .prog { text-align: right; font-weight: 800; font-size: 14px; color: var(--wood); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.chap .prog .st { color: var(--sun-dk); font-size: 18px; display: block; }
+.chap.locked { filter: grayscale(1); opacity: .6; }
+.tools { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+
+/* challenge list */
+.levels { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+.lv {
+  aspect-ratio: 1; max-width: 100%; border: 4px solid var(--wood); border-radius: 18px; background: var(--paper);
+  box-shadow: 0 4px 0 var(--wood); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0;
+}
+.lv b { font-family: var(--font-display); font-size: 26px; line-height: 1; font-variant-numeric: tabular-nums; }
+.lv .st { font-size: 12px; color: var(--sun-dk); letter-spacing: 1px; }
+.lv .st i { color: #d9d2bd; font-style: normal; }
+.lv.done { border-color: var(--grass-dk); box-shadow: 0 4px 0 var(--grass-dk); }
+.lv.next { background: #fff3c4; animation: pulse 1.6s ease-in-out infinite; }
+.lv.locked { filter: grayscale(1); opacity: .5; }
+.lv.going b::after { content: "✏️"; font-size: 13px; margin-left: 2px; }
+
+/* play */
+.status { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.pill { background: var(--paper); border-radius: 14px; padding: 4px 12px; font-weight: 800; font-size: 15px; box-shadow: 0 3px 0 #d9d2bd; font-variant-numeric: tabular-nums; }
+.board-wrap { display: flex; justify-content: center; }
+.board {
+  --size: min(calc(100vw - 32px), 480px, calc(100vh - 330px));
+  width: max(var(--size), 260px); aspect-ratio: 1; max-width: 100%;
+  display: grid; grid-template-columns: repeat(var(--n), 1fr); grid-template-rows: repeat(var(--n), 1fr);
+  background: var(--wood); border: 5px solid var(--wood); border-radius: 16px; overflow: hidden; gap: 1px;
+  box-shadow: 0 7px 0 #5a3618, 0 14px 24px rgba(0,0,0,.2);
+}
+.cell {
+  border: 0; padding: 0; background: var(--paper); display: grid; place-items: center; position: relative;
+  font-family: var(--font-display); font-weight: 800; font-size: calc(var(--size) / var(--n) * .52); line-height: 1;
+  font-variant-numeric: tabular-nums; transition: background .12s;
+}
+.cell.emoji { font-size: calc(var(--size) / var(--n) * .5); }
+.cell.bt { margin-top: 3px; }
+.cell.bl { margin-left: 3px; }
+.cell.given { background: #efe6cc; }
+.cell.peer { background: var(--peer); }
+.cell.given.peer { background: #e6dab9; }
+.cell.same { background: var(--same); }
+.cell.sel { background: var(--sel); box-shadow: inset 0 0 0 3px var(--sun-dk); z-index: 1; }
+.cell.user { color: #2a6fdb; }
+.cell.pop { animation: pop .35s ease-out; }
+.cell.flash { animation: flash .7s ease-out; }
+.cell.bad { background: #ffd2dc !important; color: var(--berry); animation: shake .45s; }
+.cell.clash { background: #ffd2dc !important; }
+.cell .ghost { opacity: .9; }
+.palette { display: grid; grid-template-columns: repeat(var(--cols), 1fr); gap: 8px; }
+.key {
+  border: 0; border-radius: 16px; min-height: 58px; background: var(--paper); box-shadow: 0 5px 0 #d9d2bd;
+  font-family: var(--font-display); font-weight: 800; font-size: 30px; line-height: 1; position: relative;
+  display: grid; place-items: center; padding: 4px 0 10px;
+}
+.key:active { transform: translateY(3px); box-shadow: 0 2px 0 #d9d2bd; }
+.key small { position: absolute; bottom: 3px; left: 0; right: 0; font-family: var(--font-body); font-size: 11px; color: var(--muted); }
+.key.used { opacity: .3; pointer-events: none; }
+.actions { display: flex; gap: 10px; justify-content: center; }
+
+/* modal & toast */
+#modal { position: fixed; inset: 0; background: rgba(34,49,74,.55); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 20; }
+#modal .sign { width: min(100%, 420px); box-sizing: border-box; text-align: center; display: flex; flex-direction: column; gap: 12px; animation: popin .35s ease-out; }
+#modal .big-em { font-size: 84px; line-height: 1; }
+#modal h2 { font-size: 32px; color: var(--wood); }
+#modal p { margin: 0; font-size: 17px; font-weight: 800; }
+#modal .stars { font-size: 44px; color: var(--sun-dk); letter-spacing: 4px; }
+#modal .stars i { color: #d9d2bd; font-style: normal; }
+.howto { text-align: left; display: flex; flex-direction: column; gap: 8px; font-weight: 600; line-height: 1.45; }
+.howto .mini-board { margin: 0 auto; }
+#toast {
+  position: fixed; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 14px); transform: translateX(-50%); z-index: 30;
+  background: var(--ink); color: #fff; padding: 10px 18px; border-radius: 16px; font-weight: 800; max-width: calc(100% - 32px); text-align: center;
+}
+.confetti { position: fixed; top: -40px; z-index: 25; font-size: 28px; pointer-events: none; animation: fall linear forwards; }
+
+@keyframes pulse { 50% { transform: scale(1.05); } }
+@keyframes pop { 40% { transform: scale(1.35); } }
+@keyframes flash { 0% { background: #c9f2c7; } 100% { background: var(--paper); } }
+@keyframes shake { 20% { transform: translateX(-5px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(3px); } }
+@keyframes popin { from { transform: scale(.7); opacity: 0; } }
+@keyframes fall { to { transform: translateY(110vh) rotate(540deg); } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition: none !important; } }
+</style>
+
+<div id="app"></div>
+<div id="modal" hidden></div>
+<div id="toast" hidden></div>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (s, r) => (r || document).querySelector(s);
+  const app = $("#app"), modal = $("#modal"), toastEl = $("#toast");
+
+  /* ================= DATA ================= */
+  const CHAPTERS = [
+    { name: "Hình thú 4×4", sub: "Xếp 4 bạn thú, không con nào trùng", n: 4, br: 2, bc: 2, sym: ["🐶", "🐱", "🐰", "🐸"], blanks: [4, 9], icon: "🐶" },
+    { name: "Số 1 – 4", sub: "Bảng 4×4 với các số", n: 4, br: 2, bc: 2, blanks: [6, 11], icon: "🔢" },
+    { name: "Số 1 – 6", sub: "Bảng 6×6, ô lớn 2×3", n: 6, br: 2, bc: 3, blanks: [12, 22], icon: "🎲" },
+    { name: "9×9 Tập sự", sub: "Sudoku cỡ thật, dễ", n: 9, br: 3, bc: 3, blanks: [32, 42], icon: "🧩" },
+    { name: "9×9 Cao thủ", sub: "Thử thách cho cả bố mẹ", n: 9, br: 3, bc: 3, blanks: [44, 54], icon: "🏆" }
+  ];
+  const PER = 10, UNLOCK_NEED = 6, HINTS = 3;
+  const REWARDS = ["🐶", "🐝", "🐢", "🦉", "🐰", "🐸", "🐿️", "🦋", "🐞", "🦔", "🐒", "🐘", "🦜", "🐱", "🦒", "🐧", "🐼", "🦁", "🐬", "🦩", "🦄", "🐨", "🦊", "🐯", "🐮", "🐷", "🐔", "🐙", "🦀", "🐳"];
+  const NUM_COLORS = ["#e2456b", "#ff8c1a", "#d4a500", "#2fa35a", "#2a9fd6", "#3a5bdb", "#8e44c9", "#c2478f", "#7a4b23"];
+
+  /* ================= SAVE ================= */
+  const KEY = "sudoku-rung-xanh-v1";
+  const fresh = () => ({ v: 1, stars: {}, play: {} });
+  function load() { try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.v === 1) return s; } catch (e) {} return null; }
+  function persist() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+  let S = load() || fresh();
+  const key = (ci, k) => `${ci}-${k}`;
+  const doneCount = ci => Array.from({ length: PER }, (_, k) => S.stars[key(ci, k)] ? 1 : 0).reduce((a, b) => a + b, 0);
+  const starSum = ci => Array.from({ length: PER }, (_, k) => S.stars[key(ci, k)] || 0).reduce((a, b) => a + b, 0);
+  const chapterOpen = ci => ci === 0 || doneCount(ci - 1) >= UNLOCK_NEED;
+  const levelOpen = (ci, k) => chapterOpen(ci) && (k === 0 || !!S.stars[key(ci, k - 1)]);
+  const starStr = n => "★".repeat(n) + `<i>${"★".repeat(3 - n)}</i>`;
+
+  /* ================= SUDOKU ENGINE ================= */
+  // Đề được tạo bằng số ngẫu nhiên có hạt giống cố định, nên thử thách số 3 lúc nào cũng là cùng một đề.
+  function seeded(seed) {
+    return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  }
+  function shuffle(a, rnd) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+  const boxIdx = (ch, r, c) => Math.floor(r / ch.br) * (ch.n / ch.bc) + Math.floor(c / ch.bc);
+
+  // Đếm số lời giải (dừng ở `limit`). Nếu có `rnd` thì điền ngẫu nhiên và giữ lời giải đầu tiên vào g.
+  function solve(g, ch, limit, rnd) {
+    const n = ch.n, full = (1 << n) - 1;
+    const rows = new Array(n).fill(0), cols = new Array(n).fill(0), boxes = new Array(n).fill(0);
+    const empties = [];
+    for (let i = 0; i < n * n; i++) {
+      const r = Math.floor(i / n), c = i % n, v = g[i];
+      if (v) { const b = 1 << (v - 1); rows[r] |= b; cols[c] |= b; boxes[boxIdx(ch, r, c)] |= b; }
+      else empties.push(i);
+    }
+    let count = 0;
+    const rec = () => {
+      let best = -1, bestMask = 0, bestCnt = 99;
+      for (const i of empties) {
+        if (g[i]) continue;
+        const r = Math.floor(i / n), c = i % n, m = full & ~(rows[r] | cols[c] | boxes[boxIdx(ch, r, c)]);
+        let cnt = 0; for (let x = m; x; x &= x - 1) cnt++;
+        if (cnt < bestCnt) { best = i; bestMask = m; bestCnt = cnt; if (cnt <= 1) break; }
+      }
+      if (best < 0) { count++; return; }
+      if (!bestMask) return;
+      const r = Math.floor(best / n), c = best % n, bx = boxIdx(ch, r, c);
+      const vals = []; for (let v = 1; v <= n; v++) if (bestMask & (1 << (v - 1))) vals.push(v);
+      if (rnd) shuffle(vals, rnd);
+      for (const v of vals) {
+        const b = 1 << (v - 1);
+        g[best] = v; rows[r] |= b; cols[c] |= b; boxes[bx] |= b;
+        rec();
+        if (count >= limit) return;   // giữ nguyên g khi đã tìm đủ (để lấy lời giải)
+        g[best] = 0; rows[r] &= ~b; cols[c] &= ~b; boxes[bx] &= ~b;
+      }
+    };
+    rec();
+    return count;
+  }
+  const puzzleCache = {};
+  function makePuzzle(ci, k) {
+    const id = key(ci, k);
+    if (puzzleCache[id]) return puzzleCache[id];
+    const ch = CHAPTERS[ci], n = ch.n, rnd = seeded(20261009 + ci * 1009 + k * 7919);
+    const sol = new Array(n * n).fill(0);
+    solve(sol, ch, 1, rnd);
+    const target = Math.round(ch.blanks[0] + (ch.blanks[1] - ch.blanks[0]) * k / (PER - 1));
+    const given = sol.slice();
+    let removed = 0;
+    for (const i of shuffle([...Array(n * n).keys()], rnd)) {
+      if (removed >= target) break;
+      const v = given[i]; given[i] = 0;
+      if (solve(given.slice(), ch, 2) === 1) removed++; else given[i] = v;
+    }
+    return (puzzleCache[id] = { sol, given });
+  }
+
+  /* ================= SOUND ================= */
+  let ac = null;
+  function sfx(kind) {
+    try {
+      ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+      if (ac.state === "suspended") ac.resume();
+      const notes = { place: [784], bad: [220, 180], unit: [659, 784, 988], win: [523, 659, 784, 1046, 1318], tap: [523] }[kind] || [600];
+      notes.forEach((f, i) => {
+        const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime + i * (kind === "win" ? .11 : .08);
+        o.type = kind === "bad" ? "sawtooth" : "triangle"; o.frequency.value = f;
+        g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(kind === "bad" ? .07 : kind === "tap" ? .05 : .18, t + .02);
+        g.gain.exponentialRampToValueAtTime(.0001, t + (kind === "win" ? .45 : .22));
+        o.connect(g).connect(ac.destination); o.start(t); o.stop(t + .5);
+      });
+    } catch (e) {}
+  }
+
+  /* ================= UI HELPERS ================= */
+  let toastTimer;
+  function toast(msg, ms) { toastEl.textContent = msg; toastEl.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { toastEl.hidden = true; }, ms || 2200); }
+  function showModal(html, bind) { modal.innerHTML = `<div class="sign">${html}</div>`; modal.hidden = false; bind && bind(modal); }
+  function hideModal() { modal.hidden = true; modal.innerHTML = ""; }
+  function anim(el, cls) { if (!el) return; el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
+  function confetti() {
+    for (let i = 0; i < 26; i++) {
+      const e = document.createElement("div");
+      e.className = "confetti"; e.textContent = ["⭐", "🌟", "🍃", "🌸", "✨"][i % 5];
+      e.style.left = Math.random() * 100 + "vw"; e.style.animationDuration = (1.6 + Math.random() * 1.6) + "s"; e.style.animationDelay = Math.random() * .5 + "s";
+      document.body.appendChild(e); setTimeout(() => e.remove(), 3800);
+    }
+  }
+  const symHTML = (ch, v) => ch.sym ? ch.sym[v - 1] : `<span style="color:${NUM_COLORS[v - 1]}">${v}</span>`;
+  const symText = (ch, v) => ch.sym ? ch.sym[v - 1] : String(v);
+  function howTo() {
+    showModal(`<h2>Cách chơi</h2>
+      <div class="howto">
+        <div class="mini-board"><span>🐶</span><span>🐱</span><span>🐰</span><span>🐸</span><span>🐰</span><span>🐸</span><span>🐶</span><span>🐱</span><span>🐱</span><span>🐶</span><span>🐸</span><span>🐰</span><span>🐸</span><span>🐰</span><span>🐱</span><span>🐶</span></div>
+        <div>➡️ Mỗi <b>hàng ngang</b> có đủ các bạn thú (hoặc các số), không ai bị lặp.</div>
+        <div>⬇️ Mỗi <b>cột dọc</b> cũng vậy.</div>
+        <div>🟫 Mỗi <b>ô vuông lớn</b> có viền dày cũng vậy.</div>
+        <div>👆 Chạm vào ô trống, rồi chạm vào bạn thú hoặc số ở dưới để điền.</div>
+        <div>💡 Bí quá thì bấm Gợi ý. Mỗi đề có ${HINTS} lần gợi ý.</div>
+        <div>⭐ Không sai, không gợi ý: 3 sao. Sai hoặc gợi ý tối đa 2 lần: 2 sao.</div>
+      </div>
+      <button class="btn big green" data-close>Đã hiểu</button>`, m => { $("[data-close]", m).onclick = hideModal; });
+  }
+
+  /* ================= SCREENS ================= */
+  function go(name, ...args) { hideModal(); document.onkeydown = null; window.scrollTo(0, 0); SCREENS[name](...args); }
+
+  const SCREENS = {
+    home() {
+      const chaps = CHAPTERS.map((ch, ci) => {
+        const open = chapterOpen(ci), d = doneCount(ci);
+        return `<button class="chap${open ? "" : " locked"}" data-ci="${ci}">
+          <span class="ic">${open ? ch.icon : "🔒"}</span>
+          <span><b>${ci + 1}. ${ch.name}</b><small>${open ? ch.sub : `Xong ${UNLOCK_NEED} thử thách của chặng ${ci} để mở`}</small></span>
+          <span class="prog"><span class="st">★ ${starSum(ci)}</span>${d}/${PER}</span></button>`;
+      }).join("");
+      app.innerHTML = `<div class="screen">
+        <div class="hero"><h1 class="logo">Sudoku Rừng Xanh<small>Thử thách tư duy cho bé</small></h1>
+          <div class="mini-board" aria-hidden="true"><span>🐶</span><span>🐱</span><span>🐰</span><span>🐸</span><span>🐰</span><span>🐸</span><span>🐶</span><span>🐱</span><span>🐱</span><span>🐶</span><span>🐸</span><span>🐰</span><span>🐸</span><span>🐰</span><span>🐱</span><span>🐶</span></div></div>
+        <div class="chapters">${chaps}</div>
+        <div class="tools">
+          <button class="btn ghost" data-help>❓ Cách chơi</button>
+          ${window.GAME_HUB ? `<a class="btn ghost" href="${window.GAME_HUB}">🎮 Game khác</a>` : ""}
+        </div></div>`;
+      app.querySelectorAll("[data-ci]").forEach(b => b.onclick = () => {
+        const ci = +b.dataset.ci;
+        if (!chapterOpen(ci)) { toast(`Xong ${UNLOCK_NEED} thử thách của chặng ${ci} để mở chặng này nhé!`); return; }
+        sfx("tap"); go("chapter", ci);
+      });
+      $("[data-help]").onclick = howTo;
+      if (!S.seenHelp) { S.seenHelp = true; persist(); howTo(); }
+    },
+
+    chapter(ci) {
+      const ch = CHAPTERS[ci];
+      let nextShown = false;
+      const lv = Array.from({ length: PER }, (_, k) => {
+        const st = S.stars[key(ci, k)] || 0, open = levelOpen(ci, k), going = !!S.play[key(ci, k)];
+        let cls = st ? " done" : open ? "" : " locked";
+        if (open && !st && !nextShown) { cls += " next"; nextShown = true; }
+        if (going && !st) cls += " going";
+        return `<button class="lv${cls}" data-k="${k}" aria-label="Thử thách ${k + 1}"><b>${k + 1}</b><span class="st">${starStr(st)}</span></button>`;
+      }).join("");
+      app.innerHTML = `<div class="screen">
+        <div class="bar"><button class="icon-btn" data-back aria-label="Quay lại">←</button>
+          <div class="grow"><h2>${ch.icon} ${ch.name}</h2><small>${ch.sub}</small></div>
+          <button class="icon-btn" data-help aria-label="Cách chơi">❓</button></div>
+        <div class="sign"><div class="levels">${lv}</div></div>
+        <p class="note" style="color:var(--paper);text-align:center">★ ${starSum(ci)}/${PER * 3} sao · Thử thách càng về sau càng nhiều ô trống</p></div>`;
+      $("[data-back]").onclick = () => go("home");
+      $("[data-help]").onclick = howTo;
+      app.querySelectorAll("[data-k]").forEach(b => b.onclick = () => {
+        const k = +b.dataset.k;
+        if (!levelOpen(ci, k)) { toast("Làm xong thử thách trước đã nhé!"); return; }
+        sfx("tap"); go("play", ci, k);
+      });
+    },
+
+    play(ci, k) {
+      const ch = CHAPTERS[ci], n = ch.n, id = key(ci, k), P = makePuzzle(ci, k);
+      const G = S.play[id] || (S.play[id] = { e: P.given.slice(), m: 0, h: 0 });
+      let sel = G.e.findIndex(v => !v);
+      const rc = i => [Math.floor(i / n), i % n];
+      const peers = (a, b) => { const [r1, c1] = rc(a), [r2, c2] = rc(b); return r1 === r2 || c1 === c2 || boxIdx(ch, r1, c1) === boxIdx(ch, r2, c2); };
+
+      const cells = G.e.map((v, i) => {
+        const [r, c] = rc(i);
+        const cls = ["cell", ch.sym ? "emoji" : "", P.given[i] ? "given" : v ? "user" : "", r % ch.br === 0 && r ? "bt" : "", c % ch.bc === 0 && c ? "bl" : ""].filter(Boolean).join(" ");
+        return `<button class="${cls}" data-i="${i}" aria-label="Hàng ${r + 1} cột ${c + 1}">${v ? symHTML(ch, v) : ""}</button>`;
+      }).join("");
+      app.innerHTML = `<div class="screen">
+        <div class="bar"><button class="icon-btn" data-back aria-label="Danh sách thử thách">←</button>
+          <div class="grow"><h2>Thử thách ${k + 1}</h2><small>${ch.icon} ${ch.name}</small></div>
+          <button class="icon-btn" data-help aria-label="Cách chơi">❓</button></div>
+        <div class="status"><span class="pill" id="pMiss"></span><span class="pill" id="pHint"></span><span class="pill" id="pLeft"></span></div>
+        <div class="board-wrap"><div class="board" id="board" style="--n:${n}">${cells}</div></div>
+        <div class="palette" id="pal" style="--cols:${n <= 6 ? n : 5}">${Array.from({ length: n }, (_, v) =>
+          `<button class="key" data-v="${v + 1}">${symHTML(ch, v + 1)}<small></small></button>`).join("")}
+          ${n === 9 ? `<button class="key" data-hint aria-label="Gợi ý">💡<small>Gợi ý</small></button>` : ""}</div>
+        ${n !== 9 ? `<div class="actions"><button class="btn ghost" data-hint>💡 Gợi ý</button></div>` : ""}</div>`;
+      const board = $("#board"), cellEls = [...board.children];
+
+      const paint = () => {
+        const sv = sel >= 0 ? G.e[sel] : 0;
+        cellEls.forEach((el, i) => {
+          el.classList.toggle("sel", i === sel);
+          el.classList.toggle("peer", sel >= 0 && i !== sel && peers(i, sel));
+          el.classList.toggle("same", !!sv && i !== sel && G.e[i] === sv);
+        });
+        const left = G.e.filter(v => !v).length;
+        $("#pMiss").textContent = `❌ Sai: ${G.m}`;
+        $("#pHint").textContent = `💡 Còn ${HINTS - G.h}`;
+        $("#pLeft").textContent = `⬜ Còn ${left} ô`;
+        app.querySelectorAll("[data-v]").forEach(b => {
+          const v = +b.dataset.v, rem = n - G.e.filter(x => x === v).length;
+          b.classList.toggle("used", rem === 0);
+          $("small", b).textContent = rem ? `còn ${rem}` : "";
+        });
+      };
+      // khi điền xong một hàng/cột/ô lớn thì cả dãy loé xanh
+      const checkUnits = i => {
+        const [r, c] = rc(i), bx = boxIdx(ch, r, c), groups = [];
+        const all = [...Array(n * n).keys()];
+        groups.push(all.filter(j => rc(j)[0] === r), all.filter(j => rc(j)[1] === c), all.filter(j => boxIdx(ch, ...rc(j)) === bx));
+        let any = false;
+        groups.forEach(gr => { if (gr.every(j => G.e[j])) { any = true; gr.forEach((j, t) => setTimeout(() => anim(cellEls[j], "flash"), t * 35)); } });
+        if (any) sfx("unit");
+      };
+      const fill = (i, v, byHint) => {
+        G.e[i] = v;
+        const el = cellEls[i];
+        el.innerHTML = symHTML(ch, v); el.classList.add("user"); anim(el, "pop");
+        persist(); paint();
+        if (!byHint) sfx("place");
+        checkUnits(i);
+        if (G.e.every(Boolean)) setTimeout(win, 650);
+      };
+      const place = v => {
+        if (sel < 0) { toast("Chạm vào một ô trống trước nhé!"); return; }
+        if (P.given[sel] || G.e[sel]) { toast("Ô này đã đúng rồi, chọn ô trống khác nhé!"); return; }
+        if (v === P.sol[sel]) { fill(sel, v); const nx = nextEmpty(sel); if (nx >= 0 && n <= 6) { sel = nx; paint(); } return; }
+        // sai: chỉ cho bé biết vì sao sai
+        G.m++; persist(); sfx("bad");
+        const el = cellEls[sel], [r, c] = rc(sel), bx = boxIdx(ch, r, c);
+        el.innerHTML = `<span class="ghost">${symHTML(ch, v)}</span>`; anim(el, "bad");
+        const clash = G.e.findIndex((x, j) => x === v && peers(j, sel));
+        let why = `Chưa đúng. Thử ${ch.sym ? "bạn thú" : "số"} khác nhé!`;
+        if (clash >= 0) {
+          const [r2, c2] = rc(clash);
+          why = r2 === r ? `Hàng này đã có ${symText(ch, v)} rồi!` : c2 === c ? `Cột này đã có ${symText(ch, v)} rồi!` : `Ô vuông lớn này đã có ${symText(ch, v)} rồi!`;
+          anim(cellEls[clash], "clash");
+        }
+        toast(why, 2600); paint();
+        const at = sel;
+        setTimeout(() => { if (!G.e[at]) cellEls[at].innerHTML = ""; cellEls[at].classList.remove("bad"); if (clash >= 0) cellEls[clash].classList.remove("clash"); }, 900);
+      };
+      const nextEmpty = from => { for (let d = 1; d <= n * n; d++) { const j = (from + d) % (n * n); if (!G.e[j]) return j; } return -1; };
+      const hint = () => {
+        if (G.h >= HINTS) { toast("Hết gợi ý rồi. Bé tự nghĩ tiếp nhé, cố lên!"); return; }
+        let i = sel >= 0 && !G.e[sel] ? sel : -1;
+        if (i < 0) {   // chọn ô dễ nhất: ít khả năng nhất
+          let best = 99;
+          G.e.forEach((v, j) => {
+            if (v) return;
+            const opts = Array.from({ length: n }, (_, x) => x + 1).filter(x => !G.e.some((y, t) => y === x && peers(t, j))).length;
+            if (opts < best) { best = opts; i = j; }
+          });
+        }
+        if (i < 0) return;
+        G.h++; sel = i; fill(i, P.sol[i], true); sfx("unit");
+        toast(`💡 Ô này là ${symText(ch, P.sol[i])}`);
+      };
+      const win = () => {
+        const errs = G.m + G.h, stars = errs === 0 ? 3 : errs <= 2 ? 2 : 1;
+        S.stars[id] = Math.max(S.stars[id] || 0, stars);
+        delete S.play[id]; persist();
+        sfx("win"); confetti();
+        const reward = REWARDS[(ci * PER + k) % REWARDS.length];
+        const last = k === PER - 1, nextOpen = !last && levelOpen(ci, k + 1);
+        const chapNowOpen = ci + 1 < CHAPTERS.length && doneCount(ci) === UNLOCK_NEED;
+        showModal(`<div class="big-em">${reward}</div><h2>Giỏi quá!</h2><div class="stars">${starStr(stars)}</div>
+          <p>Xong thử thách ${k + 1}${G.m ? ` · sai ${G.m} lần` : ""}${G.h ? ` · ${G.h} gợi ý` : ""}</p>
+          ${stars < 3 ? `<p class="note">Làm lại không sai, không gợi ý để được 3 sao nhé!</p>` : ""}
+          ${chapNowOpen ? `<p>🔓 Đã mở chặng mới: ${CHAPTERS[ci + 1].name}!</p>` : ""}
+          ${nextOpen ? `<button class="btn big green" data-next>Thử thách ${k + 2} ▶</button>` : ""}
+          <button class="btn ghost" data-list>Danh sách thử thách</button>`, m => {
+          const nb = $("[data-next]", m); if (nb) nb.onclick = () => go("play", ci, k + 1);
+          $("[data-list]", m).onclick = () => go("chapter", ci);
+        });
+      };
+
+      cellEls.forEach((el, i) => el.onclick = () => { sel = i; sfx("tap"); paint(); });
+      app.querySelectorAll("[data-v]").forEach(b => b.onclick = () => place(+b.dataset.v));
+      app.querySelectorAll("[data-hint]").forEach(b => b.onclick = hint);
+      $("[data-back]").onclick = () => go("chapter", ci);
+      $("[data-help]").onclick = howTo;
+      document.onkeydown = e => {
+        if (!modal.hidden) return;
+        const v = +e.key;
+        if (v >= 1 && v <= n) { place(v); return; }
+        const mv = { ArrowUp: -n, ArrowDown: n, ArrowLeft: -1, ArrowRight: 1 }[e.key];
+        if (mv) { e.preventDefault(); sel = sel < 0 ? 0 : (sel + mv + n * n) % (n * n); paint(); }
+      };
+      persist(); paint();
+    }
+  };
+
+  go("home");
+})();
+</script>
