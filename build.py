@@ -16,7 +16,7 @@ DOCS = os.path.join(ROOT, "docs")
 GAMES = [
     {"src": "index.html", "dir": "muong-thu", "icon": "🐝", "sounds": True,
      "desc": "Học Toán lớp 1: giải toán để cùng bạn thú đánh quái, giải cứu muông thú."},
-    {"src": "sudoku.html", "dir": "sudoku", "icon": "🧩", "sounds": False,
+    {"src": "sudoku.html", "dir": "sudoku", "icon": "🧩", "sounds": True,
      "desc": "Thử thách tư duy: Sudoku từ 4×4 hình con vật đến 9×9 cao thủ."},
 ]
 

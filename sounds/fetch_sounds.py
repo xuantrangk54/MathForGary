@@ -50,6 +50,13 @@ SOUNDS = {
     "dino":    (MIX.format(1976), 1.8),  # Dinosaur monster roar
     "fart":    (MIX.format(2891), 1.2),  # Cartoon fart sound
     "hit":     (MIX.format(2072), 0.6),  # Small hit in a game
+    # Sudoku: đúng / sai / thắng
+    "ting":    (MIX.format(600), 1.2),   # Achievement bell
+    "pop":     (MIX.format(3104), 1.3),  # Small firework explosion
+    "fireworks": (MIX.format(1689), 3.2),  # Multiple fireworks explosions
+    "cheer":   (MIX.format(523), 2.8),   # Animated small group applause
+    "trombone": (MIX.format(472), 2.8),  # Slow sad trombone fail ("tè tè tè tèee")
+    "sob":     (MIX.format(474), 2.2),   # Lost kid sobbing
 }
 
 def main():

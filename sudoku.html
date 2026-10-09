@@ -150,6 +150,25 @@ h1, h2, h3 { font-family: var(--font-display); margin: 0; line-height: 1.1; text
 }
 .confetti { position: fixed; top: -40px; z-index: 25; font-size: 28px; pointer-events: none; animation: fall linear forwards; }
 
+/* pháo hoa & em bé khóc */
+.fx-canvas { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 24; }
+.cry { position: fixed; inset: 0; z-index: 26; display: grid; place-items: center; padding: 16px; background: rgba(34,49,74,.45); animation: fadein .2s; cursor: pointer; }
+.cry.out { opacity: 0; transition: opacity .25s; }
+.cry-card {
+  background: var(--paper); border: 5px solid var(--berry); border-radius: 26px; padding: 18px 22px 14px; text-align: center;
+  box-shadow: 0 8px 0 #a82a4a; max-width: 340px; animation: popin .4s cubic-bezier(.3,1.6,.5,1);
+}
+.baby { position: relative; display: inline-block; font-size: 112px; line-height: 1; animation: sob .45s ease-in-out infinite alternate; }
+.tear { position: absolute; top: 46%; width: 13px; height: 18px; background: #5ec8ff; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; animation: tear .8s linear infinite; }
+.tear.l { left: 27%; } .tear.r { left: 63%; } .tear.d2 { animation-delay: .4s; }
+.oa { font-family: var(--font-display); font-weight: 800; font-size: 30px; color: var(--berry); line-height: 1.1; }
+.cry-card p { margin: 6px 0 4px; font-weight: 800; font-size: 18px; }
+.cry-card small { color: var(--muted); font-weight: 800; }
+body.quake #app { animation: quake .5s; }
+@keyframes tear { 0% { transform: translateY(0) scale(.6); opacity: 0; } 15% { opacity: 1; } 100% { transform: translateY(74px) scale(1); opacity: 0; } }
+@keyframes sob { from { transform: rotate(-5deg); } to { transform: rotate(5deg) scale(1.04, .95); } }
+@keyframes quake { 15% { transform: translate(-8px, 2px); } 30% { transform: translate(8px, -2px); } 45% { transform: translate(-6px, 0); } 60% { transform: translate(6px, 1px); } 80% { transform: translate(-3px, 0); } }
+@keyframes fadein { from { opacity: 0; } }
 @keyframes pulse { 50% { transform: scale(1.05); } }
 @keyframes pop { 40% { transform: scale(1.35); } }
 @keyframes flash { 0% { background: #c9f2c7; } 100% { background: var(--paper); } }
@@ -270,6 +289,97 @@ h1, h2, h3 { font-family: var(--font-display); margin: 0; line-height: 1.1; text
         o.connect(g).connect(ac.destination); o.start(t); o.stop(t + .5);
       });
     } catch (e) {}
+  }
+
+  // Tiếng thật trong thư mục sounds/ (Mixkit): chuông, pháo hoa, vỗ tay, kèn buồn, em bé khóc
+  const SOUND_FILES = ["ting", "pop", "fireworks", "cheer", "trombone", "sob"];
+  const sndCache = {};
+  function sndEl(name) {
+    let a = sndCache[name];
+    if (!a) { a = sndCache[name] = new Audio(`sounds/${name}.mp3`); a.preload = "auto"; }
+    return a;
+  }
+  function play(name, vol) {
+    try {
+      const a = sndEl(name), n = a.paused || a.ended ? a : a.cloneNode();
+      n.volume = vol == null ? 1 : vol; n.currentTime = 0;
+      const pr = n.play(); if (pr) pr.catch(() => {});
+    } catch (e) {}
+  }
+  function preloadSounds() { try { SOUND_FILES.forEach(sndEl); } catch (e) {} }
+
+  /* ================= FIREWORKS ================= */
+  const reduceMotion = (() => { try { return matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) { return false; } })();
+  const fxCanvas = document.createElement("canvas");
+  fxCanvas.className = "fx-canvas"; fxCanvas.setAttribute("aria-hidden", "true");
+  document.body.appendChild(fxCanvas);
+  const fx = fxCanvas.getContext("2d");
+  const FX_COLORS = ["#ff4d6d", "#ffc83d", "#3ad17b", "#4cc9f0", "#b388ff", "#ff8c1a", "#ffffff"];
+  let parts = [], rockets = [], fxRaf = 0;
+  function sizeFx() { const d = Math.min(2, window.devicePixelRatio || 1); fxCanvas.width = innerWidth * d; fxCanvas.height = innerHeight * d; fx.setTransform(d, 0, 0, d, 0, 0); }
+  sizeFx(); window.addEventListener("resize", sizeFx);
+  function burst(x, y, count, power) {
+    if (reduceMotion) return;
+    const base = FX_COLORS[Math.floor(Math.random() * FX_COLORS.length)];
+    for (let i = 0; i < count; i++) {
+      const a = Math.random() * Math.PI * 2, sp = power * (.35 + Math.random() * .65);
+      parts.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, decay: .011 + Math.random() * .014,
+        c: Math.random() < .55 ? base : FX_COLORS[Math.floor(Math.random() * FX_COLORS.length)], r: 2 + Math.random() * 2.6, tw: Math.random() < .3 });
+    }
+    runFx();
+  }
+  function rocket() {
+    if (reduceMotion) return;
+    rockets.push({ x: innerWidth * (.12 + Math.random() * .76), y: innerHeight + 10, vx: (Math.random() - .5) * 2, vy: -(10 + Math.random() * 4), ty: innerHeight * (.12 + Math.random() * .38) });
+    runFx();
+  }
+  function runFx() {
+    if (fxRaf) return;
+    const step = () => {
+      fx.clearRect(0, 0, innerWidth, innerHeight);
+      fx.globalCompositeOperation = "lighter";
+      rockets = rockets.filter(r => {
+        r.x += r.vx; r.y += r.vy; r.vy += .14;
+        fx.globalAlpha = 1; fx.fillStyle = "#fff4c2"; fx.beginPath(); fx.arc(r.x, r.y, 3, 0, Math.PI * 2); fx.fill();
+        if (r.y <= r.ty || r.vy >= -1) { burst(r.x, r.y, 110, 7.5); return false; }
+        return true;
+      });
+      parts = parts.filter(q => {
+        q.x += q.vx; q.y += q.vy; q.vy += .11; q.vx *= .985; q.vy *= .985; q.life -= q.decay;
+        if (q.life <= 0) return false;
+        fx.globalAlpha = Math.min(1, q.life * 1.4) * (q.tw ? .5 + .5 * Math.sin(q.life * 40) : 1);
+        fx.fillStyle = q.c; fx.beginPath(); fx.arc(q.x, q.y, q.r, 0, Math.PI * 2); fx.fill();
+        return true;
+      });
+      fx.globalAlpha = 1; fx.globalCompositeOperation = "source-over";
+      if (parts.length || rockets.length) fxRaf = requestAnimationFrame(step);
+      else { fxRaf = 0; fx.clearRect(0, 0, innerWidth, innerHeight); }
+    };
+    fxRaf = requestAnimationFrame(step);
+  }
+  const centerOf = els => {
+    const a = els[0].getBoundingClientRect(), b = els[els.length - 1].getBoundingClientRect();
+    return [(a.left + b.right) / 2, (a.top + b.bottom) / 2];
+  };
+
+  /* ================= CRYING BABY ================= */
+  let crying = false;
+  function cry(reason) {
+    crying = true;
+    play("trombone", 1); setTimeout(() => play("sob", .9), 250);
+    const o = document.createElement("div");
+    o.className = "cry"; o.setAttribute("role", "alert");
+    o.innerHTML = `<div class="cry-card"><div class="baby"><span>👶</span><i class="tear l"></i><i class="tear l d2"></i><i class="tear r"></i><i class="tear r d2"></i></div>
+      <div class="oa">Oa oa! Sai mất rồi 😭</div><p>${reason}</p><small>Chạm để thử lại</small></div>`;
+    document.body.appendChild(o);
+    document.body.classList.remove("quake"); void document.body.offsetWidth; document.body.classList.add("quake");
+    let closed = false;
+    const close = () => {
+      if (closed) return; closed = true;
+      o.classList.add("out"); setTimeout(() => o.remove(), 260);
+      document.body.classList.remove("quake"); crying = false;
+    };
+    o.onclick = close; setTimeout(close, 2800);
   }
 
   /* ================= UI HELPERS ================= */
@@ -403,34 +513,43 @@ h1, h2, h3 { font-family: var(--font-display); margin: 0; line-height: 1.1; text
         const all = [...Array(n * n).keys()];
         groups.push(all.filter(j => rc(j)[0] === r), all.filter(j => rc(j)[1] === c), all.filter(j => boxIdx(ch, ...rc(j)) === bx));
         let any = false;
-        groups.forEach(gr => { if (gr.every(j => G.e[j])) { any = true; gr.forEach((j, t) => setTimeout(() => anim(cellEls[j], "flash"), t * 35)); } });
-        if (any) sfx("unit");
+        groups.forEach(gr => {
+          if (!gr.every(j => G.e[j])) return;
+          any = true;
+          gr.forEach((j, t) => setTimeout(() => anim(cellEls[j], "flash"), t * 35));
+          const [x, y] = centerOf(gr.map(j => cellEls[j]));
+          setTimeout(() => burst(x, y, 90, 7), 150);
+        });
+        if (any) setTimeout(() => play("pop", .9), 120);
       };
       const fill = (i, v, byHint) => {
         G.e[i] = v;
         const el = cellEls[i];
         el.innerHTML = symHTML(ch, v); el.classList.add("user"); anim(el, "pop");
         persist(); paint();
-        if (!byHint) sfx("place");
+        play("ting", .8);
+        const rr = el.getBoundingClientRect();
+        burst(rr.left + rr.width / 2, rr.top + rr.height / 2, byHint ? 24 : 46, 5);
         checkUnits(i);
         if (G.e.every(Boolean)) setTimeout(win, 650);
       };
       const place = v => {
         if (sel < 0) { toast("Chạm vào một ô trống trước nhé!"); return; }
+        if (crying) return;
         if (P.given[sel] || G.e[sel]) { toast("Ô này đã đúng rồi, chọn ô trống khác nhé!"); return; }
         if (v === P.sol[sel]) { fill(sel, v); const nx = nextEmpty(sel); if (nx >= 0 && n <= 6) { sel = nx; paint(); } return; }
         // sai: chỉ cho bé biết vì sao sai
-        G.m++; persist(); sfx("bad");
+        G.m++; persist();
         const el = cellEls[sel], [r, c] = rc(sel), bx = boxIdx(ch, r, c);
         el.innerHTML = `<span class="ghost">${symHTML(ch, v)}</span>`; anim(el, "bad");
         const clash = G.e.findIndex((x, j) => x === v && peers(j, sel));
         let why = `Chưa đúng. Thử ${ch.sym ? "bạn thú" : "số"} khác nhé!`;
         if (clash >= 0) {
           const [r2, c2] = rc(clash);
-          why = r2 === r ? `Hàng này đã có ${symText(ch, v)} rồi!` : c2 === c ? `Cột này đã có ${symText(ch, v)} rồi!` : `Ô vuông lớn này đã có ${symText(ch, v)} rồi!`;
+          why = r2 === r ? `Hàng này đã có ${symHTML(ch, v)} rồi!` : c2 === c ? `Cột này đã có ${symHTML(ch, v)} rồi!` : `Ô vuông lớn này đã có ${symHTML(ch, v)} rồi!`;
           anim(cellEls[clash], "clash");
         }
-        toast(why, 2600); paint();
+        cry(why); paint();
         const at = sel;
         setTimeout(() => { if (!G.e[at]) cellEls[at].innerHTML = ""; cellEls[at].classList.remove("bad"); if (clash >= 0) cellEls[clash].classList.remove("clash"); }, 900);
       };
@@ -447,14 +566,15 @@ h1, h2, h3 { font-family: var(--font-display); margin: 0; line-height: 1.1; text
           });
         }
         if (i < 0) return;
-        G.h++; sel = i; fill(i, P.sol[i], true); sfx("unit");
+        G.h++; sel = i; fill(i, P.sol[i], true);
         toast(`💡 Ô này là ${symText(ch, P.sol[i])}`);
       };
       const win = () => {
         const errs = G.m + G.h, stars = errs === 0 ? 3 : errs <= 2 ? 2 : 1;
         S.stars[id] = Math.max(S.stars[id] || 0, stars);
         delete S.play[id]; persist();
-        sfx("win"); confetti();
+        play("fireworks", 1); setTimeout(() => play("cheer", .8), 400); confetti();
+        for (let t = 0; t < 14; t++) setTimeout(rocket, t * 260);
         const reward = REWARDS[(ci * PER + k) % REWARDS.length];
         const last = k === PER - 1, nextOpen = !last && levelOpen(ci, k + 1);
         const chapNowOpen = ci + 1 < CHAPTERS.length && doneCount(ci) === UNLOCK_NEED;
@@ -481,6 +601,7 @@ h1, h2, h3 { font-family: var(--font-display); margin: 0; line-height: 1.1; text
         const mv = { ArrowUp: -n, ArrowDown: n, ArrowLeft: -1, ArrowRight: 1 }[e.key];
         if (mv) { e.preventDefault(); sel = sel < 0 ? 0 : (sel + mv + n * n) % (n * n); paint(); }
       };
+      preloadSounds();
       persist(); paint();
     }
   };
