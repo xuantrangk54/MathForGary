@@ -417,6 +417,11 @@ td.n { text-align: right; font-weight: 800; }
   font-size: 15px; letter-spacing: 1px; color: var(--sun-dk); background: var(--paper); border-radius: 10px; padding: 0 6px;
 }
 .mn-stars i { color: #d9d2bd; font-style: normal; }
+.mn-fight {
+  position: absolute; top: -12px; right: -18px; white-space: nowrap; z-index: 2;
+  background: var(--berry); color: #fff; border: 3px solid var(--paper); border-radius: 12px; padding: 0 7px;
+  font-family: var(--font-display); font-weight: 800; font-size: 14px; font-variant-numeric: tabular-nums;
+}
 .mnode.boss { width: 104px; height: 104px; border-color: var(--berry); box-shadow: 0 6px 0 #a82a4a, 0 12px 18px rgba(0,0,0,.25); }
 .mnode.boss .mn-foe { font-size: 60px; }
 .mnode.boss .mn-num { background: var(--berry); }
@@ -1067,7 +1072,7 @@ td.n { text-align: right; font-weight: 800; }
         html += `<button class="mnode${locked ? " locked" : ""}${cleared ? " cleared" : ""}${i === cur && !S.done ? " current" : ""}${st.boss ? " boss" : ""}"
             data-i="${i}" style="left:${p.x}px;top:${p.y}px" aria-label="Màn ${i + 1}: ${st.enemy}">
           <span class="mn-foe">${cleared ? "🏳️" : st.emoji}</span>${cleared ? "" : elBadge(st.el)}
-          <span class="mn-num">${i + 1}</span><span class="mn-stars">${stars}</span></button>`;
+          <span class="mn-num">${i + 1}</span><span class="mn-stars">${stars}</span>${savedFight(i) ? `<span class="mn-fight">⚔️ ${savedFight(i).hp}</span>` : ""}</button>`;
         const c = L.cages[i];
         html += freed
           ? `<span class="wander" style="left:${p.x}px;top:${p.y}px;animation-duration:${10 + (i % 4) * 1.6}s;animation-delay:-${(i * 2.3).toFixed(1)}s"><span class="roam-in" style="animation-delay:-${(i * .17).toFixed(2)}s">${ANIMALS[st.rescue].emoji}</span></span>`
@@ -1424,7 +1429,8 @@ td.n { text-align: right; font-weight: 800; }
       <p>${st.enemy} ${freed ? `· đã cứu ${a.name} 💚` : `đang nhốt ${a.name}`}</p>
       <div class="stars">${stars}</div>
       <p class="note">Mẹo: ${st.enemy} hệ ${ELEM[st.el].icon} ${ELEM[st.el].name}, sợ hệ ${ELEM[counter].icon} ${ELEM[counter].name} (${ELEM[counter].name} ${ELEM[counter].verb} ${ELEM[st.el].name}).</p>
-      ${locked ? `<p class="note"><b>🔒 Thắng màn ${i} để mở khoá.</b></p>` : `<button class="btn big green" data-play>⚔️ Vào trận</button>`}
+      ${savedFight(i) ? `<p class="note"><b>⚔️ Đang đánh dở: ${st.enemy} còn ${savedFight(i).hp}/${st.hp} máu, bé còn ${"❤️".repeat(savedFight(i).hearts)}</b></p>` : ""}
+      ${locked ? `<p class="note"><b>🔒 Thắng màn ${i} để mở khoá.</b></p>` : `<button class="btn big green" data-play>⚔️ ${savedFight(i) ? "Đánh tiếp" : "Vào trận"}</button>`}
       <button class="btn ghost" data-close>Đóng</button>`, m => {
       const pb = $("[data-play]", m); if (pb) pb.onclick = () => startBattle(i);
       $("[data-close]", m).onclick = hideModal;
@@ -1780,11 +1786,23 @@ td.n { text-align: right; font-weight: 800; }
     const ready = S.owned.filter(id => !isHungry(id));
     return ready.length ? ready[ready.length - 1] : null;
   }
+  // Trận đánh dở được lưu theo từng màn, để bé đi cho thú ăn rồi quay lại đánh tiếp
+  const savedFight = i => { const f = (S.fights || {})[i]; return f && f.hp > 0 && f.hearts > 0 ? f : null; };
+  function saveFight() {
+    if (!B) return;
+    S.fights = S.fights || {};
+    S.fights[B.i] = { hp: B.hp, hearts: B.hearts, shield: B.shield, poison: B.poison, lost: B.lost };
+    persist();
+  }
+  function clearFight(i) { if (S.fights) { delete S.fights[i]; persist(); } }
   function startBattle(i) {
     clearInterval(ticker); window.onresize = window.onkeydown = null;
     const st = STAGES[i], pet = firstPet();
     if (!pet) return allHungry(false);
-    B = { i, hp: st.hp, max: st.hp, hearts: MAX_HEARTS, shield: false, poison: 0, pet, busy: false, lost: 0, p: null };
+    const f = savedFight(i);
+    B = { i, hp: f ? Math.min(f.hp, st.hp) : st.hp, max: st.hp, hearts: f ? f.hearts : MAX_HEARTS, shield: f ? !!f.shield : false,
+      poison: f ? f.poison || 0 : 0, pet, busy: false, lost: f ? f.lost || 0 : 0, p: null };
+    if (f) setTimeout(() => toast(`⚔️ Đánh tiếp! ${st.enemy} còn ${B.hp}/${B.max} máu`, 2600), 300);
     app.scrollTop = 0; hideModal();
     const caged = !S.owned.includes(st.rescue);
     app.innerHTML = `<div class="screen">
@@ -1812,6 +1830,7 @@ td.n { text-align: right; font-weight: 800; }
   }
   function hud() {
     const st = STAGES[B.i], a = ANIMALS[B.pet];
+    if (B.hp > 0 && B.hearts > 0) saveFight(); else clearFight(B.i);   // hết tim hay quái hết máu thì không còn "đánh dở"
     $("#hearts").textContent = "❤️".repeat(B.hearts) + "🤍".repeat(MAX_HEARTS - B.hearts);
     $("#hpFill").style.width = Math.max(0, (B.hp / B.max) * 100) + "%";
     $("#hpNum").textContent = `${st.enemy} · ${Math.max(0, B.hp)}/${B.max}`;
@@ -1944,6 +1963,7 @@ td.n { text-align: right; font-weight: 800; }
   }
   function win() {
     const st = STAGES[B.i], last = B.i === STAGES.length - 1;
+    clearFight(B.i);
     const stars = B.lost === 0 ? 3 : B.lost <= 2 ? 2 : 1;
     S.stars[B.i] = Math.max(S.stars[B.i], stars);
     if (!last) S.unlocked = Math.max(S.unlocked, B.i + 1);
@@ -1984,6 +2004,7 @@ td.n { text-align: right; font-weight: 800; }
     });
   }
   function lose() {
+    clearFight(B.i);
     say("Hết tim rồi. Thử lại nhé!");
     showModal(`<div class="big-em">😵</div><h2>Hết tim rồi!</h2><p>Không sao cả, mình thử lại nhé!</p>
       <p class="note">Mẹo: chọn bạn thú có nhãn <b>Mạnh ×${DMG.strong}</b> để đánh nhanh hơn.</p>
