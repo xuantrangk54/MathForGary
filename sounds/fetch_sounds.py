@@ -59,6 +59,9 @@ SOUNDS = {
     "sob":     (MIX.format(474), 2.2),   # Lost kid sobbing
 }
 
+LOUD = ["ting", "fireworks", "cheer"]
+
+
 def main():
     os.makedirs(RAW, exist_ok=True)
     for name, (url, dur) in SOUNDS.items():
@@ -75,6 +78,12 @@ def main():
         subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", raw, "-af", af,
                         "-ac", "1", "-ar", "44100", "-b:a", "64k", out], check=True)
         print(f"{name:8s} {os.path.getsize(out) // 1024:3d} KB")
+    # bản "loa thật to" cho tiếng chúc mừng (tăng 8 dB, có bộ giới hạn để không rè)
+    for name in LOUD:
+        src, out = os.path.join(HERE, name + ".mp3"), os.path.join(HERE, name + "-loud.mp3")
+        subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", src, "-af", "volume=8dB,alimiter=limit=0.95",
+                        "-ac", "1", "-ar", "44100", "-b:a", "96k", out], check=True)
+        print(f"{name}-loud {os.path.getsize(out) // 1024:3d} KB")
 
 if __name__ == "__main__":
     main()

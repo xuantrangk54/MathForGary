@@ -18,6 +18,8 @@ GAMES = [
      "desc": "Học Toán lớp 1: giải toán để cùng bạn thú đánh quái, giải cứu muông thú."},
     {"src": "sudoku.html", "dir": "sudoku", "icon": "🧩", "sounds": True,
      "desc": "Thử thách tư duy: Sudoku từ 4×4 hình con vật đến 9×9 cao thủ."},
+    {"src": "kiemtra.html", "dir": "kiem-tra", "icon": "📝", "sounds": True,
+     "desc": "Bố mẹ tạo đề phép cộng, bé làm bài, xem bảng kết quả và xếp sao."},
 ]
 
 HEAD = """<!doctype html>
