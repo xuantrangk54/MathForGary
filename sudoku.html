@@ -41,6 +41,9 @@ button:focus-visible, a:focus-visible { outline: 4px solid #3a86ff; outline-offs
   padding: env(safe-area-inset-top, 0px) 16px env(safe-area-inset-bottom, 0px); box-sizing: border-box;
   overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
 }
+#app { scrollbar-width: none; }
+#app::-webkit-scrollbar { display: none; }
+#app.grabbing { cursor: grabbing; user-select: none; -webkit-user-select: none; }
 :root { --vh: 100vh; }
 @supports (height: 100dvh) { :root { --vh: 100dvh; } }
 .screen { display: flex; flex-direction: column; gap: 14px; padding-block: 14px 28px; }
@@ -612,6 +615,35 @@ body.quake #app { animation: quake .5s; }
       persist(); paint();
     }
   };
+
+  // Kéo cuộn bằng chuột như vuốt tay, có trôi theo quán tính (cảm ứng dùng cuộn gốc của máy); thanh cuộn đã ẩn
+  (function dragScroll(el) {
+    let d = null, v = 0, raf = 0, moved = false;
+    el.addEventListener("pointerdown", e => {
+      if (e.pointerType !== "mouse" || e.button !== 0 || e.target.closest("input, textarea, select, .board")) return;
+      cancelAnimationFrame(raf);
+      d = { y: e.clientY, st: el.scrollTop, ly: e.clientY, t: performance.now(), id: e.pointerId }; moved = false; v = 0;
+    });
+    el.addEventListener("pointermove", e => {
+      if (!d || e.pointerId !== d.id) return;
+      if (!moved && Math.abs(e.clientY - d.y) > 6) { moved = true; el.classList.add("grabbing"); try { el.setPointerCapture(e.pointerId); } catch (err) {} }
+      if (!moved) return;
+      const now = performance.now();
+      v = (e.clientY - d.ly) / Math.max(1, now - d.t) * 16; d.ly = e.clientY; d.t = now;
+      el.scrollTop = d.st - (e.clientY - d.y);
+    });
+    const end = () => {
+      if (!d) return;
+      const idle = performance.now() - d.t; d = null; el.classList.remove("grabbing");
+      if (moved && idle < 80) {
+        const glide = () => { v *= .94; el.scrollTop -= v; if (Math.abs(v) > .4) raf = requestAnimationFrame(glide); };
+        raf = requestAnimationFrame(glide);
+      }
+    };
+    el.addEventListener("pointerup", end);
+    el.addEventListener("pointercancel", end);
+    el.addEventListener("click", e => { if (moved) { e.stopPropagation(); e.preventDefault(); moved = false; } }, true);
+  })(app);
 
   go("home");
 })();
