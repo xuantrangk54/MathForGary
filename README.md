@@ -5,6 +5,7 @@ Trang chủ: https://xuantrangk54.github.io/MathForGary/
 - **Bé Cứu Muông Thú** (`index.html`): https://xuantrangk54.github.io/MathForGary/muong-thu/
 - **Sudoku Rừng Xanh** (`sudoku.html`): https://xuantrangk54.github.io/MathForGary/sudoku/ . Gồm 50 thử thách chia 5 chặng, từ 4×4 hình con vật đến 9×9. Đề được tạo cố định từ hạt giống và có đúng một lời giải.
 - **Kiểm Tra Phép Cộng** (`kiemtra.html`): https://xuantrangk54.github.io/MathForGary/kiem-tra/ . Bố mẹ tạo đề (số câu, tổng nhỏ hơn bao nhiêu, mốc ĐẠT và mốc sao), xác nhận bằng một phép nhân; bé làm bài; có bảng kết quả từng câu và lịch sử.
+- **Xếp Hình Cứu Thú** (`xephinh.html`): https://xuantrangk54.github.io/MathForGary/xep-hinh/ . Xếp hình trượt 4×4 có một ô trống, 10 màn, mỗi màn ghép tranh một bạn thú. Đề được xáo bằng cách trượt ngẫu nhiên từ tranh đã ghép nên luôn giải được.
 
 ## Bé Cứu Muông Thú
 
@@ -20,7 +21,7 @@ Game học Toán lớp 1 (tiếng Việt) chơi trên điện thoại và máy t
 ## Cấu trúc
 - `index.html`: mã nguồn game, một file duy nhất.
 - `sounds/`: âm thanh tấn công. `sounds/fetch_sounds.py` tải và cắt lại các file này (cần ffmpeg).
-- `build.py`: tạo trang chủ và bản web hoàn chỉnh của từng game trong `docs/` cho GitHub Pages. Chạy lại mỗi khi sửa `index.html`, `sudoku.html` hoặc `kiemtra.html`.
+- `build.py`: tạo trang chủ và bản web hoàn chỉnh của từng game trong `docs/` cho GitHub Pages. Chạy lại mỗi khi sửa một file game ở thư mục gốc.
 
 ## Âm thanh
 - [Mixkit](https://mixkit.co/license/#sfxFree), giấy phép Sound Effects Free

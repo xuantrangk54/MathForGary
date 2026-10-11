@@ -20,6 +20,8 @@ GAMES = [
      "desc": "Thử thách tư duy: Sudoku từ 4×4 hình con vật đến 9×9 cao thủ."},
     {"src": "kiemtra.html", "dir": "kiem-tra", "icon": "📝", "sounds": True,
      "desc": "Bố mẹ tạo đề phép cộng, bé làm bài, xem bảng kết quả và xếp sao."},
+    {"src": "xephinh.html", "dir": "xep-hinh", "icon": "🖼️", "sounds": True,
+     "desc": "Xếp hình trượt 4×4: ghép lại tranh để mở lồng cứu 10 bạn thú."},
 ]
 
 HEAD = """<!doctype html>
