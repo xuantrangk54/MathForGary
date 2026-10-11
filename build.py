@@ -8,7 +8,7 @@ index.html và sudoku.html ở thư mục gốc là bản nguồn (không có <!
 vì claude.ai tự bọc). Script này bọc chúng thành trang HTML hoàn chỉnh.
 Chạy: python build.py
 """
-import os, re, shutil
+import json, os, re, shutil
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 DOCS = os.path.join(ROOT, "docs")
@@ -36,6 +36,9 @@ HEAD = """<!doctype html>
 <title>{title}</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>{icon}</text></svg>">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Game của Gary">
+<link rel="manifest" href="{root}manifest.webmanifest">
+<link rel="apple-touch-icon" href="{root}apple-touch-icon.png">
 {extra}
 </head>
 <body>
@@ -48,10 +51,10 @@ def write(path, text):
         f.write(text)
 
 
-def wrap(src, desc, icon, extra=""):
+def wrap(src, desc, icon, extra="", root="../"):
     title = re.search(r"<title>(.*?)</title>", src).group(1)
     body = re.sub(r"<title>.*?</title>\s*", "", src, count=1)
-    return HEAD.format(title=title, desc=desc, icon=icon, extra=extra) + body + "\n</body>\n</html>\n", title
+    return HEAD.format(title=title, desc=desc, icon=icon, extra=extra, root=root) + body + "\n</body>\n</html>\n", title
 
 
 # bản cũ để game toán ngay ở docs/, dọn đi
@@ -98,8 +101,19 @@ h1 { font-family: "Baloo 2", system-ui, sans-serif; font-size: 44px; line-height
   """ + "\n  ".join(cards) + """
   <p class="foot">Tiến trình chơi được lưu trên máy này.</p>
 </main>"""
-hub = HEAD.format(title="Góc Game của Gary", desc="Các game học tập cho bé: Toán lớp 1 và Sudoku.", icon="🎮", extra="") \
+hub = HEAD.format(title="Góc Game của Gary", desc="Các game học tập cho bé: Toán lớp 1, Sudoku, kiểm tra phép cộng, xếp hình.", icon="🎮", extra="", root="") \
     + hub_body + "\n</body>\n</html>\n"
 write(os.path.join(DOCS, "index.html"), hub)
 open(os.path.join(DOCS, ".nojekyll"), "w").close()
+
+# Thêm vào màn hình chính: mở như app, không có thanh công cụ của trình duyệt
+for f in ("icon-512.png", "apple-touch-icon.png"):
+    shutil.copy2(os.path.join(ROOT, "icons", f), os.path.join(DOCS, f))
+write(os.path.join(DOCS, "manifest.webmanifest"), json.dumps({
+    "name": "Góc Game của Gary", "short_name": "Game của Gary", "lang": "vi",
+    "start_url": "./", "scope": "./", "display": "fullscreen",
+    "background_color": "#74c26f", "theme_color": "#74c26f",
+    "icons": [{"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+              {"src": "apple-touch-icon.png", "sizes": "180x180", "type": "image/png"}],
+}, ensure_ascii=False, indent=2))
 print("docs/ ready:", ", ".join(g["dir"] for g in GAMES))

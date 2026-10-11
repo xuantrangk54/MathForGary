@@ -194,13 +194,13 @@ a.btn { display: block; text-align: center; text-decoration: none; }
 /* ---------- battle ---------- */
 .arena {
   position: relative; display: grid; grid-template-columns: 1fr 1fr; align-items: end;
-  min-height: 170px; padding-bottom: 6px;
+  min-height: clamp(108px, calc(var(--vh) * .2), 170px); padding-bottom: 6px;
 }
 .side { display: flex; flex-direction: column; align-items: center; gap: 4px; position: relative; }
 .me-row { display: flex; align-items: flex-end; gap: 2px; }
-.hero-sprite { font-size: 50px; line-height: 1; }
-.pet-sprite { font-size: 66px; line-height: 1; display: inline-block; position: relative; z-index: 2; }
-.enemy-sprite { font-size: 84px; line-height: 1; display: inline-block; }
+.hero-sprite { font-size: clamp(34px, calc(var(--vh) * .058), 50px); line-height: 1; }
+.pet-sprite { font-size: clamp(42px, calc(var(--vh) * .075), 66px); line-height: 1; display: inline-block; position: relative; z-index: 2; }
+.enemy-sprite { font-size: clamp(52px, calc(var(--vh) * .095), 84px); line-height: 1; display: inline-block; }
 .shield-badge { position: absolute; top: -6px; left: 4px; font-size: 30px; }
 .hpbar { width: 86%; height: 14px; border-radius: 10px; background: #fff; border: 3px solid var(--wood); overflow: hidden; }
 .hpbar i { display: block; height: 100%; background: var(--berry); transition: width .4s; }
@@ -223,18 +223,18 @@ a.btn { display: block; text-align: center; text-decoration: none; }
 .panel { display: flex; flex-direction: column; gap: 12px; }
 .q { display: flex; align-items: center; gap: 10px; }
 .q-body { flex: 1; text-align: center; min-width: 0; }
-.eq { font-family: var(--font-display); font-weight: 800; font-size: 46px; line-height: 1.1; letter-spacing: .02em; font-variant-numeric: tabular-nums; }
+.eq { font-family: var(--font-display); font-weight: 800; font-size: clamp(32px, calc(var(--vh) * .055), 46px); line-height: 1.1; letter-spacing: .02em; font-variant-numeric: tabular-nums; }
 .eq .blank { display: inline-block; min-width: 1.1em; border-bottom: 5px solid var(--sun-dk); color: var(--sun-dk); }
 .ask { font-weight: 800; font-size: 18px; color: var(--muted); }
-.things { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 6px; font-size: 32px; line-height: 1.15; }
+.things { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 6px; font-size: clamp(24px, calc(var(--vh) * .038), 32px); line-height: 1.15; }
 .thing { display: inline-flex; flex-direction: column; align-items: center; }
 .thing b { font-size: 15px; color: var(--dot-b); font-family: var(--font-display); }
 .speak { flex: none; }
 .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .choices.three { grid-template-columns: repeat(3, 1fr); }
 .choice {
-  border: 0; border-radius: 20px; min-height: 76px; background: var(--sun);
-  box-shadow: 0 6px 0 var(--sun-dk); font-family: var(--font-display); font-weight: 800; font-size: 40px; line-height: 1;
+  border: 0; border-radius: 20px; min-height: clamp(52px, calc(var(--vh) * .085), 76px); background: var(--sun);
+  box-shadow: 0 6px 0 var(--sun-dk); font-family: var(--font-display); font-weight: 800; font-size: clamp(28px, calc(var(--vh) * .046), 40px); line-height: 1;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
 }
 .choice small { font-family: var(--font-body); font-size: 14px; }
@@ -298,6 +298,13 @@ a.btn { display: block; text-align: center; text-decoration: none; }
 .pet-card.on { border-color: var(--grass-dk); background: #effae9; box-shadow: 0 4px 0 var(--grass-dk); }
 .pet-card.hungry { filter: grayscale(1); opacity: .55; }
 .tray-label { font-weight: 800; font-size: 14px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.35); }
+/* Khay chọn thú luôn nằm ở đáy vùng nhìn thấy (iPad/iPhone có thanh công cụ cũng không bị khuất) */
+.tray-dock {
+  position: sticky; bottom: 0; z-index: 6; margin-top: auto; margin-inline: -16px; padding: 14px 16px 6px;
+  background: linear-gradient(rgba(63,148,80,0), rgba(63,148,80,.9) 26%, var(--grass-dk));
+}
+.tray-dock .tray { padding-bottom: 6px; }
+.tray-dock .pet-card .em { font-size: clamp(24px, calc(var(--vh) * .04), 32px); }
 
 /* ---------- camp ---------- */
 .camp-list { display: flex; flex-direction: column; gap: 12px; }
@@ -553,13 +560,6 @@ td.n { text-align: right; font-weight: 800; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition: none !important; }
 }
-@media (max-height: 640px) {
-  .arena { min-height: 140px; }
-  .enemy-sprite { font-size: 66px; }
-  .pet-sprite { font-size: 54px; }
-  .eq { font-size: 38px; }
-  .choice { min-height: 64px; font-size: 34px; }
-}
 </style>
 
 <div id="app"></div>
@@ -807,6 +807,20 @@ td.n { text-align: right; font-weight: 800; }
     f.className = "float" + (good ? " good" : "") + (extra ? " " + extra : ""); f.textContent = text;
     parent.appendChild(f); setTimeout(() => f.remove(), 1000);
   }
+  const fsSupported = () => !!(document.fullscreenEnabled || document.webkitFullscreenEnabled);
+  const fsActive = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
+  function toggleFullscreen() {
+    const el = document.documentElement;
+    try {
+      if (fsActive()) (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+      else {
+        const r = (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
+        if (r && r.catch) r.catch(() => toast("Máy chưa cho toàn màn hình. Hãy thêm game vào màn hình chính nhé!", 3500));
+      }
+    } catch (e) {}
+  }
+  const fsBtn = cls => fsSupported() ? `<button class="${cls || "icon-btn"}" data-fs aria-label="Toàn màn hình">⛶${cls ? " Toàn màn hình" : ""}</button>` : "";
+  const bindFs = () => document.querySelectorAll("[data-fs]").forEach(b => b.onclick = toggleFullscreen);
   function showModal(html, bind) { modal.innerHTML = `<div class="sign">${html}</div>`; modal.hidden = false; bind && bind(modal); }
   function hideModal() { modal.hidden = true; modal.innerHTML = ""; }
   function elBadge(el) { return el ? `<span class="el-badge" title="Hệ ${ELEM[el].name}">${ELEM[el].icon}</span>` : ""; }
@@ -1024,10 +1038,12 @@ td.n { text-align: right; font-weight: 800; }
         <div class="title-actions">
           <button class="btn big green" data-go>${S.hero ? "Chơi tiếp ▶" : "Bắt đầu ▶"}</button>
           <button class="btn ghost" data-parent>👪 Góc phụ huynh</button>
+          ${fsBtn("btn ghost")}
           ${window.GAME_HUB ? `<a class="btn ghost hub-link" href="${window.GAME_HUB}">🎮 Game khác</a>` : ""}
         </div></div>`;
       $("[data-go]").onclick = () => { sfx("ok"); go(S.hero ? "map" : "choose"); };
       $("[data-parent]").onclick = () => go("parent");
+      bindFs();
     },
 
     choose() {
@@ -1090,6 +1106,7 @@ td.n { text-align: right; font-weight: 800; }
           <span class="grow"></span>
           <button class="icon-btn" data-legend aria-label="Bảng khắc chế">☯️</button>
           <button class="icon-btn" data-camp aria-label="Trại thú">🏕️<span class="lbl"> Trại</span></button>
+          ${fsBtn()}
           <button class="icon-btn" data-home aria-label="Màn hình chính">🏠</button>
         </div>
         <button class="icon-btn map-focus" data-focus aria-label="Về màn đang chơi">📍</button>
@@ -1106,6 +1123,7 @@ td.n { text-align: right; font-weight: 800; }
       $("[data-camp]").onclick = () => go("camp");
       $("[data-home]").onclick = () => go("title");
       $("[data-focus]").onclick = () => pan.focus(hp.x, hp.y, true);
+      bindFs();
     },
 
     camp() {
@@ -1809,6 +1827,7 @@ td.n { text-align: right; font-weight: 800; }
       <div class="bar"><button class="icon-btn" data-back aria-label="Về bản đồ">←</button>
         <div class="grow"><h2>Màn ${i + 1}</h2></div>
         <button class="icon-btn" data-legend aria-label="Bảng khắc chế">☯️</button>
+        ${fsBtn()}
         <div class="hearts" id="hearts"></div></div>
       <div class="arena" id="arena">
         <div class="side" id="meSide"><span class="shield-badge" id="shield" hidden>🛡️</span>
@@ -1820,11 +1839,12 @@ td.n { text-align: right; font-weight: 800; }
           <div class="hpbar"><i id="hpFill"></i></div><div class="hp-num" id="hpNum"></div></div>
       </div>
       <div class="panel" id="panel"></div>
-      <div class="tray-label">Chọn bạn thú ra trận (kéo sang để xem thêm 👉):</div>
-      <div class="tray" id="tray"></div></div>`;
+      <div class="tray-dock">
+        <div class="tray-label">Chọn bạn thú ra trận (kéo sang để xem thêm 👉):</div>
+        <div class="tray" id="tray"></div></div></div>`;
     $("[data-back]").onclick = () => go("map");
     $("[data-legend]").onclick = showLegend;
-    dragScroll($("#tray")); preloadSfx();
+    dragScroll($("#tray")); preloadSfx(); bindFs();
     setTimeout(() => { const b = $("#bubble"); if (b) b.hidden = true; }, 3500);
     hud(); renderTray(); say(st.taunt); newProblem(true);
   }
